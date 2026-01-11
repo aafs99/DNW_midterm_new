@@ -1,4 +1,4 @@
-##  Coursework Template ##
+##  Midterm cm2040 ##
 ### CM2040 Database Networks and the Web ###
 
 #### Installation requirements ####

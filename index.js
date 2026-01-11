@@ -1,42 +1,76 @@
 /**
-* index.js
-* This is your main app entry point
-*/
+ * index.js
+ * Main entry point for Restaurant Workshop Manager App
+ */
 
-// Set up express, bodyparser and EJS
+// Set up the required modules
 const express = require('express');
+const session = require('express-session');      // authentication
+const flash = require('connect-flash');          // flash messages
+
 const app = express();
 const port = 3000;
+
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
-app.set('view engine', 'ejs'); // set the app to use ejs for rendering
-app.use(express.static(__dirname + '/public')); // set location of static files
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/public'));
 
-// Set up SQLite
-// Items in the global namespace are accessible throught out the node application
+// Session for for login
+app.use(session({
+    secret: 'flavor-academy-secret-key',
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Flash messages middleware
+app.use(flash());
+
+// incl flash messages available to all templates
+app.use((req, res, next) => {
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
+});
+
+// set up for SQLite
 const sqlite3 = require('sqlite3').verbose();
-global.db = new sqlite3.Database('./database.db',function(err){
-    if(err){
+global.db = new sqlite3.Database('./database.db', function(err) {
+    if (err) {
         console.error(err);
-        process.exit(1); // bail out we can't connect to the DB
+        process.exit(1);
     } else {
         console.log("Database connected");
-        global.db.run("PRAGMA foreign_keys=ON"); // tell SQLite to pay attention to foreign key constraints
+        global.db.run("PRAGMA foreign_keys=ON");
     }
 });
 
-// Handle requests to the home page 
+// home page ejs
 app.get('/', (req, res) => {
-    res.send('Hello World :D!')
+    res.render('home');
 });
 
-// Add all the route handlers in usersRoutes to the app under the path /users
+// login routes
+const loginRoutes = require('./routes/login');
+app.use('/login', loginRoutes);
+
+// logout route
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
+
+// organiser routes
+const organiserRoutes = require('./routes/organiser');
+app.use('/organiser', organiserRoutes);
+
+// attendee routes
+const attendeeRoutes = require('./routes/attendee');
+app.use('/attendee', attendeeRoutes);
+
+// !TDL remove? users routes
 const usersRoutes = require('./routes/users');
 app.use('/users', usersRoutes);
-
-
-// Make the web application listen for HTTP requests
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
-
+    console.log(`Example app listening on port ${port}`);
+});
