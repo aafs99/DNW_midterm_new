@@ -18,7 +18,7 @@ app.use(express.static(__dirname + '/public'));
 
 // Session for for login
 app.use(session({
-    secret: 'flavor-academy-secret-key',
+    secret: 'flavour-academy-secret-key',
     resave: false,
     saveUninitialized: false
 }));
