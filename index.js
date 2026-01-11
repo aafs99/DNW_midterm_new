@@ -140,5 +140,5 @@ app.use('/users', usersRoutes);
 
 // Start server
 app.listen(port, () => {
-    console.log(`Flavor Academy running on port ${port}`);
+    console.log(`Flavour Academy running on port ${port}`);
 });
