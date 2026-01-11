@@ -72,5 +72,5 @@ app.use('/attendee', attendeeRoutes);
 const usersRoutes = require('./routes/users');
 app.use('/users', usersRoutes);
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+    console.log(`x listening on port ${port}`);
 });

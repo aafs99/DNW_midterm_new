@@ -1,0 +1,218 @@
+<!-- edit_event.ejs -->
+<!-- Workshop editing page for the organiser -->
+<!-- START -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Workshop | Flavor Academy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/organiser.css">
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+
+    <!-- navigation bar -->
+    <nav class="navbar navbar-custom mb-4">
+        <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
+            <span class="navbar-brand mb-0">Flavor Academy</span>
+        </div>
+    </nav>
+
+    <!-- logout button -->
+    <div class="mt-2 mb-4 home-btn-left">
+        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+    </div>
+
+    <div class="container mt-5" style="max-width: 700px;">
+
+        <!-- page header -->
+        <h1 class="mb-4 text-center">Edit Workshop</h1>
+
+        <!-- creation date display -->
+        <p class="text-center text-muted mb-4"><strong>Created:</strong> <%= event.created_at %></p>
+
+        <!-- workshop edit form -->
+        <form method="POST" action="/organiser/edit/<%= event.event_id %>" class="needs-validation" novalidate>
+            
+            <!-- workshop title -->
+            <div class="mb-3">
+                <label for="title" class="form-label">Workshop Title:</label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value="<%= event.title %>"
+                    class="form-control"
+                    placeholder="e.g. Italian Pasta Masterclass"
+                    required
+                />
+                <div class="invalid-feedback">
+                    Please enter the workshop title.
+                </div>
+            </div>
+
+            <!-- workshop description -->
+            <div class="mb-3">
+                <label for="description" class="form-label">Workshop Description:</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    class="form-control"
+                    placeholder="Describe what participants will learn and cook..."
+                    required
+                ><%= event.description %></textarea>
+                <div class="invalid-feedback">
+                    Please enter the workshop description.
+                </div>
+            </div>
+
+            <!-- workshop date -->
+            <div class="mb-3">
+                <label for="event_date" class="form-label">Workshop Date:</label>
+                <input
+                    type="date"
+                    id="event_date"
+                    name="event_date"
+                    value="<%= event.event_date.slice(0, 10) %>"
+                    class="form-control"
+                    required
+                />
+                <div class="invalid-feedback">
+                    Please select a valid workshop date.
+                </div>
+            </div>
+
+            <!-- workshop category (extension feature) -->
+            <% if (typeof categories !== 'undefined' && categories) { %>
+            <div class="mb-4">
+                <label for="category_id" class="form-label">Workshop Category:</label>
+                <select id="category_id" name="category_id" class="form-select">
+                    <option value="">Select a category</option>
+                    <% categories.forEach(cat => { %>
+                        <option value="<%= cat.category_id %>" <%= (event.category_id == cat.category_id) ? 'selected' : '' %>>
+                            <%= cat.name %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+            <% } %>
+<!-- END -->
+
+            <!-- standard seats section -->
+            <h3 class="mb-3">Standard Seats</h3>
+            <p class="text-muted small mb-3">Full price admission for general participants</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="full_quantity" class="form-label">Number of Seats:</label>
+                    <input
+                        type="number"
+                        id="full_quantity"
+                        name="full_quantity"
+                        value="<%= full.quantity %>"
+                        min="0"
+                        class="form-control"
+                        required
+                    />
+                    <div class="invalid-feedback">
+                        Please enter the quantity (0 or more).
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="full_price" class="form-label">Price per Seat:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input
+                            type="number"
+                            id="full_price"
+                            name="full_price"
+                            step="0.01"
+                            value="<%= full.price %>"
+                            min="0"
+                            class="form-control"
+                            required
+                        />
+                    </div>
+                    <div class="invalid-feedback">
+                        Please enter a valid price (0 or more).
+                    </div>
+                </div>
+            </div>
+
+            <!-- student/senior seats section -->
+            <h3 class="mb-3">Student/Senior Seats</h3>
+            <p class="text-muted small mb-3">Discounted admission for students and seniors</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <label for="concession_quantity" class="form-label">Number of Seats:</label>
+                    <input
+                        type="number"
+                        id="concession_quantity"
+                        name="concession_quantity"
+                        value="<%= concession.quantity %>"
+                        min="0"
+                        class="form-control"
+                        required
+                    />
+                    <div class="invalid-feedback">
+                        Please enter the quantity (0 or more).
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="concession_price" class="form-label">Price per Seat:</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input
+                            type="number"
+                            id="concession_price"
+                            name="concession_price"
+                            step="0.01"
+                            value="<%= concession.price %>"
+                            min="0"
+                            class="form-control"
+                            required
+                        />
+                    </div>
+                    <div class="invalid-feedback">
+                        Please enter a valid price (0 or more).
+                    </div>
+                </div>
+            </div>
+
+<!-- START -->
+            <!-- save button -->
+            <button type="submit" class="btn btn-outline-accent w-100">Save Changes</button>
+        </form>
+
+        <!-- back to chef dashboard -->
+        <div class="mt-4 text-center">
+            <a href="/organiser" class="text-main text-decoration-none">Back to Chef Dashboard</a>
+        </div>
+
+    </div>
+
+    <!-- bootstrap form validation script -->
+    <script>
+        (() => {
+            'use strict';
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
+
+</body>
+</html>
+<!-- END -->

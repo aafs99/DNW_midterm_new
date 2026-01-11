@@ -1,0 +1,88 @@
+<!-- booking_confirmation.ejs -->
+<!-- Reservation confirmation page to be shown after successful booking the seat -->
+<!-- START -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Confirmed | Flavor Academy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+
+    <!-- navigation bar -->
+    <nav class="navbar navbar-custom mb-4">
+        <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
+            <span class="navbar-brand mb-0">Flavor Academy</span>
+        </div>
+    </nav>
+
+    <!-- back to guest portal -->
+    <div class="mt-2 mb-4 home-btn-left">
+        <a href="/attendee" class="btn btn-outline-light btn-sm">Back to Workshops</a>
+    </div>
+
+    <div class="container mt-5 text-center">
+
+        <!-- main confirmation message -->
+        <h1 class="mb-4">Reservation Confirmed!</h1>
+<!-- END -->
+
+        <!-- personalized thank you message -->
+        <h5 class="text-accent mb-4">Thank you, <%= attendeeName %>!</h5>
+        <p class="text-light">Your seats have been reserved. We look forward to cooking with you!</p>
+
+<!-- START -->
+        <!-- workshop title and date -->
+        <div class="card card-accent mx-auto mt-4 p-4" style="max-width: 500px;">
+            <h3 class="mb-3"><%= event.title %></h3>
+            <p class="text-muted mb-0">Workshop Date: <%= event.event_date %></p>
+        </div>
+<!-- END -->
+
+        <!-- list of reserved seats -->
+        <h4 class="mt-5 mb-3">Your Reserved Seats:</h4>
+
+        <ul class="list-group mx-auto" style="max-width: 400px;">
+            <% bookings.forEach(b => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <% if (b.ticket_type === 'full') { %>
+                            Standard Seat
+                        <% } else if (b.ticket_type === 'concession') { %>
+                            Student/Senior Seat
+                        <% } else { %>
+                            <%= b.ticket_type.charAt(0).toUpperCase() + b.ticket_type.slice(1) %> Seat
+                        <% } %>
+                    </span>
+                    <span class="badge bg-primary rounded-pill"><%= b.quantity %></span>
+                </li>
+            <% }) %>
+        </ul>
+
+        <!-- totals summary -->
+        <div class="card card-accent mx-auto mt-4 p-3" style="max-width: 400px;">
+            <p class="mb-1"><strong>Total Seats:</strong> <%= totalQuantity %></p>
+            <p class="mb-0"><strong>Total Amount:</strong> $<%= totalPrice.toFixed(2) %></p>
+        </div>
+
+        <!-- additional info -->
+        <div class="mt-4">
+            <p class="text-muted small">Please arrive 10 minutes before the workshop starts.</p>
+            <p class="text-muted small">All ingredients and equipment will be provided.</p>
+        </div>
+
+<!-- START -->
+        <!-- back to workshops button -->
+        <a href="/attendee" class="btn btn-accent mt-4">Browse More Workshops</a>
+    </div>
+
+    <!-- footer spacing -->
+    <div class="mb-5"></div>
+
+</body>
+</html>
+<!-- END -->

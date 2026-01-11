@@ -1,0 +1,136 @@
+<!-- organiser_home.ejs -->
+<!-- Organisers Dashboard (Manage workshops, view drafts and published workshops) -->
+<!-- START -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chef Dashboard | Flavor Academy</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/organiser.css">
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+
+    <!-- navigation bar -->
+    <nav class="navbar navbar-custom mb-4">
+        <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
+            <span class="navbar-brand mb-0">Flavor Academy</span>
+        </div>
+    </nav>
+
+    <!-- logout button -->
+    <div class="mt-2 mb-4 home-btn-left">
+        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+    </div>
+
+    <!-- page header -->
+    <div class="container text-center mt-5">
+        <h1 class="mb-2">Chef Dashboard</h1>
+        <h2><%= settings.site_name %></h2>
+        <p class="text-light mb-4"><%= settings.site_description %></p>
+
+        <!-- action buttons -->
+        <div class="d-flex justify-content-center gap-3 mb-5 flex-wrap">
+            <a href="/organiser/settings" class="btn btn-accent">Academy Settings</a>
+            <a href="/organiser/create" class="btn btn-accent">Create New Workshop</a>
+            <a href="/organiser/view-bookings" class="btn btn-accent">View Reservations</a>
+        </div>
+    </div>
+
+    <!-- published workshops section -->
+    <div class="container mt-4">
+        <h3 class="text-center text-info mb-3">Published Workshops</h3>
+        <% if (publishedEvents.length === 0) { %>
+            <p class="text-center text-muted">No published workshops yet.</p>
+        <% } else { %>
+            <div class="d-flex overflow-auto gap-3 py-3 px-2">
+                <% publishedEvents.forEach(event => { %>
+                    <div class="card card-accent" style="min-width: 280px;">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= event.title %></h5>
+                            <p class="card-text mb-1"><strong>Date:</strong> <%= event.event_date %></p>
+                            <p class="card-text mb-1"><strong>Available Seats:</strong></p>
+                            <% if (event.remainingTickets) { %>
+                                <% for (let type in event.remainingTickets) { %>
+                                    <p class="card-text small mb-1">
+                                        <% if (type === 'full') { %>
+                                            Standard: <%= event.remainingTickets[type] %>
+                                        <% } else if (type === 'concession') { %>
+                                            Student/Senior: <%= event.remainingTickets[type] %>
+                                        <% } else { %>
+                                            <%= type.charAt(0).toUpperCase() + type.slice(1) %>: <%= event.remainingTickets[type] %>
+                                        <% } %>
+                                    </p>
+                                <% } %>
+                            <% } %>
+                            <p class="card-text mb-1"><strong>Sharing Link:</strong></p>
+                            <p class="card-text small mb-1">
+                                <a href="/attendee/event/<%= event.event_id %>" class="text-info">
+                                    /attendee/event/<%= event.event_id %>
+                                </a>
+                            </p>
+                            <p class="card-text mb-1 text-muted"><small>Created: <%= event.created_at_formatted %></small></p>
+                            <p class="card-text mb-1 text-muted"><small>Published: <%= event.published_at_formatted %></small></p>
+                            <p class="card-text mb-1 text-muted"><small>Last Modified: <%= event.updated_at_formatted %></small></p>
+                            <a href="/organiser/edit/<%= event.event_id %>" class="btn btn-sm btn-outline-primary mt-2">Edit</a>
+                            <form method="POST" action="/organiser/delete/<%= event.event_id %>" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger mt-2">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+<!-- END -->
+
+    <!-- draft workshops section -->
+    <div class="container mt-5">
+        <h3 class="text-center text-secondary mb-3">Draft Workshops</h3>
+        <% if (draftEvents.length === 0) { %>
+            <p class="text-center text-muted">No draft workshops.</p>
+        <% } else { %>
+            <div class="d-flex overflow-auto gap-3 py-3 px-2">
+                <% draftEvents.forEach(event => { %>
+                    <div class="card card-accent" style="min-width: 280px;">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= event.title %></h5>
+                            <p class="card-text mb-1"><strong>Date:</strong> <%= event.event_date %></p>
+                            <p class="card-text mb-1"><strong>Available Seats:</strong></p>
+                            <% if (event.remainingTickets) { %>
+                                <% for (let type in event.remainingTickets) { %>
+                                    <p class="card-text small mb-1">
+                                        <% if (type === 'full') { %>
+                                            Standard: <%= event.remainingTickets[type] %>
+                                        <% } else if (type === 'concession') { %>
+                                            Student/Senior: <%= event.remainingTickets[type] %>
+                                        <% } else { %>
+                                            <%= type.charAt(0).toUpperCase() + type.slice(1) %>: <%= event.remainingTickets[type] %>
+                                        <% } %>
+                                    </p>
+                                <% } %>
+                            <% } %>
+                            <p class="card-text mb-1 text-muted"><small>Created: <%= event.created_at_formatted %></small></p>
+                            <p class="card-text text-muted"><small>Last Modified: <%= event.updated_at_formatted %></small></p>
+                            <a href="/organiser/edit/<%= event.event_id %>" class="btn btn-sm btn-outline-primary mt-2">Edit</a>
+                            <form method="POST" action="/organiser/delete/<%= event.event_id %>" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger mt-2">Delete</button>
+                            </form>
+                            <form method="POST" action="/organiser/publish/<%= event.event_id %>" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-success mt-2">Publish</button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- footer spacing -->
+    <div class="mb-5"></div>
+
+</body>
+</html>
