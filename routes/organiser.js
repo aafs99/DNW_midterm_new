@@ -1,6 +1,6 @@
 /**
  * organiser.js
- * Chef Dashboard Routes for Flavor Academy
+ * Chef Dashboard Routes for flavour Academy
  *
  * @description Handles workshop CRUD operations, settings management,
  * and reservation viewing with authentication middleware

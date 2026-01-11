@@ -1,4 +1,4 @@
-# Flavor Academy
+# flavour Academy
 
 Restaurant Workshop Manager: A web application for managing cooking workshops and class reservations.
 

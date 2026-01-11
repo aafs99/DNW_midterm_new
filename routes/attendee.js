@@ -1,6 +1,6 @@
 /**
  * attendee.js
- * Guest Portal Routes for Flavor Academy
+ * Guest Portal Routes for flavour Academy
  *
  * @description Handles workshop browsing, filtering, and seat reservations
  * with input validation and booking limits

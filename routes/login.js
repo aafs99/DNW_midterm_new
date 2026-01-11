@@ -1,6 +1,6 @@
 /**
  * login.js
- * Authentication Routes for Flavor Academy
+ * Authentication Routes for flavour Academy
  * Handles chef login, registration, and logout
  */
 // START

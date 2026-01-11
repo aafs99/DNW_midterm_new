@@ -1,5 +1,5 @@
 -- db_schema.sql
--- Flavor Academy - Restaurant Workshop Manager
+-- flavour Academy - Restaurant Workshop Manager
 -- Database schema with indexes for performance
 
 -- Enable foreign key constraints
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS settings (
 
 -- Default site settings
 INSERT INTO settings (id, site_name, site_description)
-VALUES (1, 'Flavor Academy', 'Hands on cooking workshops for food lovers of all skill levels');
+VALUES (1, 'Flavour Academy', 'Hands on cooking workshops for food lovers of all skill levels');
 
 -- ============================================================================
 -- CATEGORIES TABLE (EXTENSION)
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS organisers (
 -- Password: admin123 (will be hashed on first login or via setup script)
 -- For development, using plain text. In production, run password hash script.
 INSERT INTO organisers (username, password, email, role, created_at)
-VALUES ('admin', 'admin123', 'admin@flavoracademy.com', 'admin', datetime('now'));
+VALUES ('admin', 'admin123', 'admin@flavouracademy.com', 'admin', datetime('now'));
 
 -- ============================================================================
 -- PERFORMANCE INDEXES
