@@ -7,6 +7,16 @@ PRAGMA foreign_keys=ON;
 
 BEGIN TRANSACTION;
 
+CREATE TABLE IF NOT EXISTS organisers (
+    organiser_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+INSERT INTO organisers (username, password, created_at)
+VALUES ('admin', 'admin123', datetime('now'));
+
 -- ============================================================================
 -- SETTINGS TABLE
 -- Stores name and description
