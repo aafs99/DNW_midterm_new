@@ -1,9 +1,85 @@
+/**
+ * organiser.css
+ * Styles for Chef Dashboard pages
+ */
+/* START */
 
+body {
+    background: #0f172a !important;
+}
 
-//
-//  organiser.swift
-//  
-//
-//  Created by Asfa Ibrahim on 12-1-26.
-//
+/* Card Styling */
+.card {
+    border-radius: 10px;
+    min-height: 280px;
+}
 
+.card-title {
+    font-size: 1.1rem;
+    color: #f8fafc;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Link Hover Effects */
+a.text-warning {
+    transition: color 0.2s ease;
+}
+
+a.text-warning:hover {
+    color: #D4A853;
+    text-decoration: underline;
+}
+
+/* Form Button Spacing */
+form button,
+form a.btn {
+    margin-top: 10px;
+}
+
+/* Horizontal Scroll Container */
+.d-flex.overflow-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #C45C26 #1a1a1a;
+}
+
+.d-flex.overflow-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.d-flex.overflow-auto::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.d-flex.overflow-auto::-webkit-scrollbar-thumb {
+    background-color: #C45C26;
+    border-radius: 4px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .card {
+        min-width: 100% !important;
+    }
+}
+
+/* Table Responsive Styling */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-sm th,
+.table-sm td {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* END */

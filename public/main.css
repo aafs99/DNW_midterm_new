@@ -1,1 +1,191 @@
-/* Define styles */
+/**
+ * main.css
+ * Global styles for Flavor Academy */
+/* START */
+
+/* Color Variables */
+:root {
+    --primary: #C45C26;          /* Burnt orange / terracotta */
+    --primary-dark: #8B3A1D;     /* Darker burnt orange */
+    --secondary: #2D5A27;        /* Forest green */
+    --accent: #D4A853;           /* Golden wheat */
+    --background: #1a1a1a;       /* Dark background */
+    --background-alt: #0f172a;   /* Darker sections */
+    --text-light: #f8f9fa;       /* Light text */
+    --text-muted: #adb5bd;       /* Muted text */
+    --card-bg: #111;             /* Card background */
+}
+
+/* Base Body Styles */
+body {
+    background-color: var(--background) !important;
+    color: var(--text-light);
+    font-family: 'Open Sans', 'Prompt', sans-serif;
+}
+
+/* Navigation Bar */
+.navbar-custom {
+    background-color: var(--primary);
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-custom .navbar-brand {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.75rem;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Home Button Positioning */
+.home-btn-left {
+    margin-left: 0;
+    padding-left: 1rem;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: var(--primary);
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
+
+h1 {
+    color: var(--accent);
+}
+
+/* Primary Accent Button */
+.btn-accent {
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-accent:hover {
+    background-color: var(--primary-dark);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* Outline Accent Button */
+.btn-outline-accent {
+    border: 2px solid var(--primary);
+    background-color: transparent;
+    color: var(--primary);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-accent:hover {
+    background-color: var(--primary);
+    color: #fff;
+}
+
+/* Card Styles */
+.card-accent {
+    background-color: var(--card-bg);
+    color: var(--text-light);
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 8px rgba(196, 92, 38, 0.2);
+    transition: all 0.3s ease;
+}
+
+.card-accent:hover {
+    box-shadow: 0 4px 12px rgba(196, 92, 38, 0.3);
+}
+
+/* Form Focus States */
+input:focus, textarea:focus, select:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 5px rgba(196, 92, 38, 0.5) !important;
+    outline: none;
+}
+
+/* Text Utilities */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-accent {
+    color: var(--accent) !important;
+}
+
+.text-main {
+    color: var(--primary) !important;
+}
+
+.text-info {
+    color: var(--accent) !important;
+}
+
+/* Form Controls Dark Theme */
+.form-control, .form-select {
+    background-color: #222;
+    border-color: #444;
+    color: var(--text-light);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #222;
+    color: var(--text-light);
+}
+
+.form-control::placeholder {
+    color: #888;
+}
+
+/* Table Styles */
+.table {
+    color: var(--text-light);
+}
+
+.table th {
+    border-color: #444;
+    color: var(--accent);
+}
+
+.table td {
+    border-color: #333;
+}
+
+/* Badge Customization */
+.badge.bg-secondary {
+    background-color: var(--secondary) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--accent) !important;
+    color: #000 !important;
+}
+
+/* List Group Dark Theme */
+.list-group-item {
+    background-color: var(--card-bg);
+    border-color: #333;
+    color: var(--text-light);
+}
+
+/* Alert Customization */
+.alert-success {
+    background-color: rgba(45, 90, 39, 0.2);
+    border-color: var(--secondary);
+    color: #8BC34A;
+}
+
+.alert-info {
+    background-color: rgba(196, 92, 38, 0.2);
+    border-color: var(--primary);
+    color: var(--accent);
+}
+
+/* Card Header */
+.card-header {
+    background-color: rgba(196, 92, 38, 0.1);
+    border-bottom: 1px solid var(--primary);
+}
+
+/* END */
