@@ -75,7 +75,7 @@ You can also register new chef accounts via the login page.
 ## Project Structure
 
 ```
-flavor-academy/
+flavour-academy/
 ├── index.js              # Main application entry point
 ├── package.json          # Dependencies and scripts
 ├── db_schema.sql         # Database schema
@@ -88,13 +88,13 @@ flavor-academy/
 ├── views/
 │   ├── home.ejs                # Landing page
 │   ├── login.ejs               # Chef login page
-│   ├── organiser_home.ejs      # Chef dashboard
-│   ├── edit_event.ejs          # Workshop editor
-│   ├── site_settings.ejs       # Academy settings
-│   ├── view_bookings.ejs       # Reservation summary
-│   ├── attendee_home.ejs       # Guest workshop listing
-│   ├── attendee_event.ejs      # Workshop detail/booking
-│   ├── booking_confirmation.ejs # Reservation confirmation
+│   ├── dashboard.ejs      # Chef dashboard
+│   ├── workshop_form.ejs          # Workshop editor
+│   ├── configure.ejs       # Academy settings
+│   ├── reservations.ejs       # Reservation summary
+│   ├── catalog.ejs       # Guest workshop listing
+│   ├── workshop_detail.ejs      # Workshop detail/booking
+│   ├── receipt.ejs # Reservation confirmation
 │   └── add_user.ejs            # Add user (template)
 └── public/
     ├── main.css          # Global styles

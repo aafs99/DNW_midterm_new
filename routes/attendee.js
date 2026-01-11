@@ -46,7 +46,7 @@ router.get('/', (req, res) => {
             db.all(eventQuery, params, (err3, events) => {
                 if (err3) return res.status(500).send("Workshop list failed");
 
-                res.render('attendee_home', {
+                res.render('catalog', {
                     settings,
                     events,
                     categories,
@@ -88,7 +88,7 @@ router.get('/event/:id', (req, res) => {
                         return { ...ticket, remaining };
                     });
 
-                    res.render('attendee_event', {
+                    res.render('workshop_detail', {
                         event,
                         tickets: ticketData
                     });
@@ -214,7 +214,7 @@ router.get('/confirmation/:id', (req, res) => {
                     totalPrice += b.quantity * (priceMap[b.ticket_type] || 0);
                 });
 
-                res.render('booking_confirmation', {
+                res.render('receipt', {
                     event,
                     bookings,
                     attendeeName,

@@ -124,7 +124,7 @@ router.get('/', (req, res) => {
                 });
 
                 // Render the chef dashboard
-                res.render('organiser_home', {
+                res.render('dashboard', {
                     settings,
                     publishedEvents,
                     draftEvents
@@ -221,7 +221,7 @@ router.get('/view-bookings', (req, res) => {
         }));
 
         all.then(() => {
-            res.render('view_bookings', { events });
+            res.render('reservations', { events });
         });
     });
 });
@@ -235,7 +235,7 @@ router.get('/view-bookings', (req, res) => {
 router.get('/settings', (req, res) => {
     db.get('SELECT * FROM settings WHERE id = 1', (err, settings) => {
         if (err || !settings) return res.status(500).send("Settings not found");
-        res.render('site_settings', { settings });
+        res.render('configure', { settings });
     });
 });
 
@@ -287,7 +287,7 @@ router.get('/edit/:id', (req, res) => {
 
             // Get all categories for dropdown (extension feature)
             db.all('SELECT * FROM categories ORDER BY name ASC', [], (err3, categories) => {
-                res.render('edit_event', {
+                res.render('workshop_form', {
                     event,
                     full,
                     concession,
