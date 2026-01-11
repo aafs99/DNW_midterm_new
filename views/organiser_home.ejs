@@ -1,5 +1,5 @@
-<!-- dashboard.ejs -->
-<!-- Organisers Dashboard (Manage workshops, view drafts and published workshops) -->
+<!-- organiser_home.ejs -->
+<!-- Chef Dashboard: Manage workshops, view drafts and published workshops -->
 <!-- START -->
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +28,7 @@
 
     <!-- page header -->
     <div class="container text-center mt-5">
-        <h1 class="mb-2">Chef Dashboard</h1>
+        <h1 class="mb-2">Organiser Home Page</h1>
         <h2><%= settings.site_name %></h2>
         <p class="text-light mb-4"><%= settings.site_description %></p>
 
@@ -37,6 +37,7 @@
             <a href="/organiser/settings" class="btn btn-accent">Academy Settings</a>
             <a href="/organiser/create" class="btn btn-accent">Create New Workshop</a>
             <a href="/organiser/view-bookings" class="btn btn-accent">View Reservations</a>
+            <a href="/organiser/waitlist" class="btn btn-outline-warning">View Waitlist</a>
         </div>
     </div>
 

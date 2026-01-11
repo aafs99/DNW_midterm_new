@@ -1,25 +1,15 @@
 -- db_schema.sql
--- Midterm: Flavour Academy, a Restaurant Workshop Manager
--- Database for restaurant workshop booking system
+-- Flavor Academy - Restaurant Workshop Manager
+-- Database schema with indexes for performance
 
 -- Enable foreign key constraints
 PRAGMA foreign_keys=ON;
 
 BEGIN TRANSACTION;
 
-CREATE TABLE IF NOT EXISTS organisers (
-    organiser_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-INSERT INTO organisers (username, password, created_at)
-VALUES ('admin', 'admin123', datetime('now'));
-
 -- ============================================================================
 -- SETTINGS TABLE
--- Stores name and description
+-- Stores site configuration (name and description)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY,
@@ -27,12 +17,12 @@ CREATE TABLE IF NOT EXISTS settings (
     site_description TEXT NOT NULL
 );
 
--- Default site settings for Flavour Academy
+-- Default site settings
 INSERT INTO settings (id, site_name, site_description)
-VALUES (1, 'Flavour Academy', 'Hands-on cooking workshops for food lovers of all skill levels');
+VALUES (1, 'Flavor Academy', 'Hands on cooking workshops for food lovers of all skill levels');
 
 -- ============================================================================
--- CATEGORIES TABLE (!EXTENSION)
+-- CATEGORIES TABLE (EXTENSION)
 -- Workshop categories for filtering and organization
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS categories (
@@ -50,9 +40,7 @@ INSERT INTO categories (name) VALUES ('BBQ & Grilling');
 
 -- ============================================================================
 -- EVENTS TABLE (Workshops)
--- Stores workshop/event information
--- Inputs: title, description, date, timestamps, status
--- Outputs: Used by organiser and attendee pages
+-- Stores workshop information
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS events (
     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,8 +57,7 @@ CREATE TABLE IF NOT EXISTS events (
 
 -- ============================================================================
 -- TICKETS TABLE (Seat Types)
--- Stores seat/ ticket types and pricing for each workshop
--- Types: "full" = Standard seats, "concession" = Student/Senior seats
+-- Stores seat types and pricing for each workshop
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS tickets (
     ticket_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,9 +69,8 @@ CREATE TABLE IF NOT EXISTS tickets (
 );
 
 -- ============================================================================
--- BOOKINGS TABLE (Reservations )
+-- BOOKINGS TABLE (Reservations)
 -- Stores guest reservations for workshops
--- Inputs: event_id, guest name, email, ticket type, quantity
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS bookings (
     booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,5 +83,70 @@ CREATE TABLE IF NOT EXISTS bookings (
     dietary_notes TEXT,
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
 );
+
+-- ============================================================================
+-- ORGANISERS TABLE (Chef Accounts)
+-- Stores chef login credentials
+-- Note: Passwords are hashed using bcrypt
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS organisers (
+    organiser_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    email TEXT,
+    role TEXT DEFAULT 'organiser',
+    created_at TEXT NOT NULL
+);
+
+-- Default admin account
+-- Password: admin123 (will be hashed on first login or via setup script)
+-- For development, using plain text. In production, run password hash script.
+INSERT INTO organisers (username, password, email, role, created_at)
+VALUES ('admin', 'admin123', 'admin@flavoracademy.com', 'admin', datetime('now'));
+
+-- ============================================================================
+-- PERFORMANCE INDEXES
+-- Speed up common queries
+-- ============================================================================
+
+-- Index for filtering events by status (published/draft)
+CREATE INDEX idx_events_status ON events(status);
+
+-- Index for ordering events by date
+CREATE INDEX idx_events_date ON events(event_date);
+
+-- Index for looking up bookings by event
+CREATE INDEX idx_bookings_event ON bookings(event_id);
+
+-- Index for looking up tickets by event
+CREATE INDEX idx_tickets_event ON tickets(event_id);
+
+-- Index for category lookups
+CREATE INDEX idx_events_category ON events(category_id);
+
+-- Index for organiser username lookup (login)
+CREATE INDEX idx_organisers_username ON organisers(username);
+
+-- ============================================================================
+-- WAITLIST TABLE (EXTENSION)
+-- Queue for attendees when workshops are fully booked
+-- Demonstrates: FIFO queue management, complex availability logic
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS waitlist (
+    waitlist_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    attendee_name TEXT NOT NULL,
+    attendee_email TEXT NOT NULL,
+    ticket_type TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    requested_at TEXT NOT NULL,
+    status TEXT DEFAULT 'waiting',
+    notified_at TEXT,
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE
+);
+
+-- Index for waitlist lookups
+CREATE INDEX idx_waitlist_event ON waitlist(event_id);
+CREATE INDEX idx_waitlist_status ON waitlist(status);
 
 COMMIT;

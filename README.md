@@ -25,7 +25,7 @@ npm run start
 
 4. Open your browser and navigate to:
    * http://localhost:3000 (Home)
-   * http://localhost:3000/attendee (Guest Portal)
+   * http://localhost:3000/attendee (Attendee Home Page)
    * http://localhost:3000/login (Chef Login)
 
 ## Default Chef Login
@@ -38,8 +38,8 @@ You can also register new chef accounts via the login page.
 ## Features
 
 ### Base Features
-* Chef Dashboard for managing cooking workshops
-* Guest Portal for browsing and booking workshops
+* Organiser Home Page for managing cooking workshops
+* Attendee Home Page for browsing and booking workshops
 * Two seat types: Standard and Student/Senior pricing
 * Workshop publishing workflow (draft to published)
 * Site settings management

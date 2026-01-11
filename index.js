@@ -126,11 +126,11 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// Organiser routes (Chef Dashboard)
+// Organiser routes (Organiser Home Page)
 const organiserRoutes = require('./routes/organiser');
 app.use('/organiser', organiserRoutes);
 
-// Attendee routes (Guest Portal)
+// Attendee routes (Attendee Home Page)
 const attendeeRoutes = require('./routes/attendee');
 app.use('/attendee', attendeeRoutes);
 
