@@ -1,191 +1,149 @@
-/**
- * main.css
- * Global styles for flavour Academy */
-/* START */
+/* main.css - Global styles for Flavour Academy */
 
-/* Color Variables */
 :root {
-    --primary: #C45C26;          /* Burnt orange / terracotta */
-    --primary-dark: #8B3A1D;     /* Darker burnt orange */
-    --secondary: #2D5A27;        /* Forest green */
-    --accent: #D4A853;           /* Golden wheat */
-    --background: #1a1a1a;       /* Dark background */
-    --background-alt: #0f172a;   /* Darker sections */
-    --text-light: #f8f9fa;       /* Light text */
-    --text-muted: #adb5bd;       /* Muted text */
-    --card-bg: #111;             /* Card background */
+    --primary: #C45C26;
+    --accent: #D4A853;
+    --secondary: #2D5A27;
+    --bg-dark: #1a1a1a;
+    --text-light: #f0f0f0;
 }
 
-/* Base Body Styles */
 body {
-    background-color: var(--background) !important;
+    font-family: 'Open Sans', sans-serif;
+    background-color: var(--bg-dark);
     color: var(--text-light);
-    font-family: 'Open Sans', 'Prompt', sans-serif;
+    min-height: 100vh;
 }
 
-/* Navigation Bar */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Navbar */
 .navbar-custom {
     background-color: var(--primary);
-    height: 70px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    min-height: 50px;
 }
 
-.navbar-custom .navbar-brand {
-    color: #fff;
-    font-weight: bold;
-    font-size: 1.75rem;
+.navbar-brand {
+    color: white !important;
     font-family: 'Playfair Display', serif;
 }
 
-/* Home Button Positioning */
-.home-btn-left {
-    margin-left: 0;
-    padding-left: 1rem;
-}
-
-/* Headings */
-h1, h2, h3 {
-    color: var(--primary);
-    font-weight: 700;
-    font-family: 'Playfair Display', serif;
-}
-
-h1 {
-    color: var(--accent);
-}
-
-/* Primary Accent Button */
+/* Buttons */
 .btn-accent {
-    background-color: var(--primary);
-    color: #fff;
-    border: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #1a1a1a;
 }
 
 .btn-accent:hover {
-    background-color: var(--primary-dark);
-    color: #fff;
-    transform: translateY(-1px);
+    background-color: #c49643;
+    border-color: #c49643;
+    color: #1a1a1a;
 }
 
-/* Outline Accent Button */
-.btn-outline-accent {
-    border: 2px solid var(--primary);
-    background-color: transparent;
-    color: var(--primary);
-    font-weight: 600;
-    transition: all 0.3s ease;
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-.btn-outline-accent:hover {
-    background-color: var(--primary);
-    color: #fff;
-}
-
-/* Card Styles */
+/* Cards */
 .card-accent {
-    background-color: var(--card-bg);
+    background-color: #2a2a2a;
+    border: 1px solid #444;
     color: var(--text-light);
-    border: 1px solid var(--primary);
-    box-shadow: 0 0 8px rgba(196, 92, 38, 0.2);
-    transition: all 0.3s ease;
 }
 
-.card-accent:hover {
-    box-shadow: 0 4px 12px rgba(196, 92, 38, 0.3);
+.card-accent .card-header {
+    background-color: #333;
+    border-bottom: 1px solid #444;
 }
 
-/* Form Focus States */
-input:focus, textarea:focus, select:focus {
-    border-color: var(--primary) !important;
-    box-shadow: 0 0 5px rgba(196, 92, 38, 0.5) !important;
-    outline: none;
+.card-accent .card-footer {
+    background-color: #333;
+    border-top: 1px solid #444;
 }
 
-/* Text Utilities */
-.text-muted {
-    color: var(--text-muted) !important;
-}
-
-.text-accent {
-    color: var(--accent) !important;
-}
-
-.text-main {
-    color: var(--primary) !important;
-}
-
-.text-info {
-    color: var(--accent) !important;
-}
-
-/* Form Controls Dark Theme */
+/* Form controls */
 .form-control, .form-select {
-    background-color: #222;
-    border-color: #444;
+    background-color: #333;
+    border-color: #555;
     color: var(--text-light);
 }
 
 .form-control:focus, .form-select:focus {
-    background-color: #222;
+    background-color: #333;
+    border-color: var(--accent);
     color: var(--text-light);
+    box-shadow: 0 0 0 0.2rem rgba(212, 168, 83, 0.25);
 }
 
 .form-control::placeholder {
     color: #888;
 }
 
-/* Table Styles */
+.form-label {
+    color: var(--text-light);
+}
+
+.form-text {
+    color: #888;
+}
+
+/* Tables */
 .table {
     color: var(--text-light);
 }
 
-.table th {
+.table thead th {
+    border-bottom-color: #444;
+    color: var(--accent);
+}
+
+.table td, .table th {
     border-color: #444;
-    color: var(--accent);
 }
 
-.table td {
-    border-color: #333;
-}
-
-/* Badge Customization */
-.badge.bg-secondary {
-    background-color: var(--secondary) !important;
-}
-
-.badge.bg-warning {
-    background-color: var(--accent) !important;
-    color: #000 !important;
-}
-
-/* List Group Dark Theme */
-.list-group-item {
-    background-color: var(--card-bg);
-    border-color: #333;
-    color: var(--text-light);
-}
-
-/* Alert Customization */
+/* Alerts */
 .alert-success {
-    background-color: rgba(45, 90, 39, 0.2);
-    border-color: var(--secondary);
-    color: #8BC34A;
+    background-color: #1a3d1a;
+    border-color: #2d5a27;
+    color: #a3d9a5;
 }
 
-.alert-info {
-    background-color: rgba(196, 92, 38, 0.2);
-    border-color: var(--primary);
+.alert-warning {
+    background-color: #3d3d1a;
+    border-color: #5a5a27;
+    color: #d9d9a5;
+}
+
+.alert-danger {
+    background-color: #3d1a1a;
+    border-color: #5a2727;
+    color: #d9a5a5;
+}
+
+/* Position helpers */
+.home-btn-left {
+    position: fixed;
+    top: 60px;
+    left: 15px;
+    z-index: 1000;
+}
+
+/* Links */
+a {
     color: var(--accent);
 }
 
-/* Card Header */
-.card-header {
-    background-color: rgba(196, 92, 38, 0.1);
-    border-bottom: 1px solid var(--primary);
+a:hover {
+    color: #c49643;
 }
 
-/* END */
+.text-info {
+    color: #6dd3ce !important;
+}
+
+.text-main {
+    color: var(--accent);
+}

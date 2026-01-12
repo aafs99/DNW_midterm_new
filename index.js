@@ -1,46 +1,72 @@
 /**
  * index.js
- * Main entry point for Restaurant Workshop Manager App
+ * Event Manager Application: Flavour Academy
+ * Main entry point
  */
 
-// Set up the required modules
+// =============================================================================
+// MODULE IMPORTS
+// =============================================================================
 const express = require('express');
-const session = require('express-session');      // authentication
-const flash = require('connect-flash');          // flash messages
+const session = require('express-session');
+const flash = require('connect-flash');
+const bodyParser = require('body-parser');
 
+// =============================================================================
+// APPLICATION SETUP
+// =============================================================================
 const app = express();
 const port = 3000;
 
-var bodyParser = require("body-parser");
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
 
-// Session for login
+// =============================================================================
+// SESSION CONFIGURATION
+// Manage user authentication sessions
+// Inputs HTTP requests
+// Outputs Session data attached to req.session
+// =============================================================================
 app.use(session({
     secret: 'flavour-academy-secret-key',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        httpOnly: true,
+        maxAge: 3600000
+    }
 }));
 
-// Flash messages middleware
+// =============================================================================
+// FLASH MESSAGES
+// Display one-time messages across redirects
+// Inputs Messages set via req.flash()
+// Outputs Messages available in res.locals for templates
+// =============================================================================
 app.use(flash());
 
-// Include flash messages available to all templates
 app.use((req, res, next) => {
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
 });
 
-// Set up SQLite
+// =============================================================================
+// DATABASE CONNECTION
+// Create single SQLite connection shared across all routes
+// Inputs Database file path
+// Outputs global.db available to all route modules
+// =============================================================================
 const sqlite3 = require('sqlite3').verbose();
 global.db = new sqlite3.Database('./database.db', function(err) {
     if (err) {
-        console.error(err);
+        console.error('Database connection failed:', err);
         process.exit(1);
     } else {
-        console.log("Database connected");
+        console.log('Database connected');
         global.db.run("PRAGMA foreign_keys=ON");
     }
 });
@@ -50,95 +76,80 @@ global.db = new sqlite3.Database('./database.db', function(err) {
 // =============================================================================
 
 /**
- * GET: Home Page
- * Purpose: Display main landing page with navigation options
- * Input: None
- * Output: Renders home.ejs template
+ * GET /
+ * Display main home page with navigation links
+ * Inputs None
+ * Outputs Renders home.ejs with links to organiser and attendee pages
  */
 app.get('/', (req, res) => {
     res.render('home');
 });
 
 /**
- * POST: Register New Chef Account
- * Purpose: Create new organiser account in database
- * Input: username, password, confirm_password from form body
- * Output: Redirects to login with success message or shows error
+ * GET /logout
+ * End user session and redirect to home
+ * Inputs req.session
+ * Outputs Destroys session, redirects to /
  */
-app.post('/register', (req, res) => {
-    const { username, password, confirm_password } = req.body;
-
-    // Validate all fields present
-    if (!username || !password || !confirm_password) {
-        return res.send('All fields are required. <a href="/login">Try again</a>');
-    }
-    
-    // Validate passwords match
-    if (password !== confirm_password) {
-        return res.send('Passwords do not match. <a href="/login">Try again</a>');
-    }
-
-    // Validate password length
-    if (password.length < 6) {
-        return res.send('Password must be at least 6 characters. <a href="/login">Try again</a>');
-    }
-
-    // Check if username already exists
-    global.db.get('SELECT * FROM organisers WHERE username = ?', [username], (err, existingUser) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Database error. <a href="/login">Try again</a>');
-        }
-        
-        if (existingUser) {
-            return res.send('Username already exists. <a href="/login">Try again</a>');
-        }
-
-        // Create new chef account
-        const now = new Date().toISOString();
-        global.db.run(
-            'INSERT INTO organisers (username, password, created_at) VALUES (?, ?, ?)',
-            [username, password, now],
-            function(err) {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Failed to create account. <a href="/login">Try again</a>');
-                }
-                // Redirect to login with success message
-                res.redirect('/login?message=Account created successfully! Please login.');
-            }
-        );
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) console.error('Session destroy error:', err);
+        res.redirect('/');
     });
 });
 
-// Login routes
+// =============================================================================
+// ROUTE MODULES
+// All routes use global.db for database access (single connection)
+// =============================================================================
+
 const loginRoutes = require('./routes/login');
 app.use('/login', loginRoutes);
 
-/**
- * GET: Logout
- * Purpose: Destroy session and redirect to home
- * Input: None
- * Output: Redirects to home page
- */
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/');
-});
-
-// Organiser routes (Organiser Home Page)
 const organiserRoutes = require('./routes/organiser');
 app.use('/organiser', organiserRoutes);
 
-// Attendee routes (Attendee Home Page)
 const attendeeRoutes = require('./routes/attendee');
 app.use('/attendee', attendeeRoutes);
 
-// Users routes (from template, kept for compatibility)
+// Users routes - from original template
+// Not used in main application (registration via /login/register)
+// Kept for template compliance
 const usersRoutes = require('./routes/users');
 app.use('/users', usersRoutes);
 
-// Start server
+// =============================================================================
+// ERROR HANDLERS
+// =============================================================================
+
+/**
+ * 404 Handler
+ * Handle requests to undefined routes
+ */
+app.use((req, res) => {
+    res.status(404).send(`
+        <h1>404 - Page Not Found</h1>
+        <p>The page you requested does not exist.</p>
+        <a href="/">Return to Home</a>
+    `);
+});
+
+/**
+ * Error Handler
+ * Handle server errors
+ */
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).send(`
+        <h1>500 - Server Error</h1>
+        <p>Something went wrong.</p>
+        <a href="/">Return to Home</a>
+    `);
+});
+
+// =============================================================================
+// START SERVER
+// =============================================================================
 app.listen(port, () => {
-    console.log(`Flavour Academy running on port ${port}`);
+    console.log(`Flavour Academy running at http://localhost:${port}`);
 });

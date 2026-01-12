@@ -1,127 +1,76 @@
-# flavour Academy
+# Event Manager - Flavour Academy
 
-Restaurant Workshop Manager: A web application for managing cooking workshops and class reservations.
+A web application for managing cooking workshop events.
 
 ## Setup Instructions
 
 1. Install dependencies:
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 2. Build the database:
-```bash
-npm run build-db
-```
-For Windows users:
-```bash
-npm run build-db-win
-```
+   ```bash
+   npm run build-db
+   ```
 
 3. Start the server:
-```bash
-npm run start
-```
+   ```bash
+   npm run start
+   ```
 
-4. Open your browser and navigate to:
-   * http://localhost:3000 (Home)
-   * http://localhost:3000/attendee (Attendee Home Page)
-   * http://localhost:3000/login (Chef Login)
+4. Open browser: http://localhost:3000
 
-## Default Chef Login
+## Default Login
 
-Username: `admin`
-Password: `admin123`
-
-You can also register new chef accounts via the login page.
-
-## Features
-
-### Base Features
-* Organiser Home Page for managing cooking workshops
-* Attendee Home Page for browsing and booking workshops
-* Two seat types: Standard and Student/Senior pricing
-* Workshop publishing workflow (draft to published)
-* Site settings management
-* Session based authentication
-
-### Extension Features
-* Workshop Categories (Italian, Baking, Asian Fusion, etc.)
-* Category filtering on guest portal
-* Email capture during reservation
-* Dietary requirements and allergy notes
-* Enhanced reservation summary with dietary alerts
-
-## Technologies Used
-
-* Node.js and Express.js (Server)
-* SQLite3 (Database)
-* EJS Templates (Views)
-* Bootstrap 5 (Styling)
-* express-session (Authentication)
-* connect-flash (Flash Messages)
+- **Username:** admin
+- **Password:** admin123
 
 ## Additional Libraries
 
 | Library | Purpose |
 |---------|---------|
 | express | Web server framework |
-| ejs | Template rendering |
+| express-session | Session management |
+| connect-flash | Flash messages |
+| bcrypt | Password hashing |
+| ejs | Template engine |
 | sqlite3 | Database driver |
-| express-session | Session management for login |
-| connect-flash | Success/error flash messages |
-| body-parser | Form data parsing |
+| body-parser | Request body parsing |
 
 ## Project Structure
 
 ```
-flavour-academy/
-├── index.js              # Main application entry point
-├── package.json          # Dependencies and scripts
-├── db_schema.sql         # Database schema
-├── database.db           # SQLite database (generated)
+├── index.js                 # Main entry point
+├── package.json             # Dependencies
+├── db_schema.sql            # Database schema
 ├── routes/
-│   ├── organiser.js      # Chef dashboard routes
-│   ├── attendee.js       # Guest portal routes
-│   ├── login.js          # Authentication routes
-│   └── users.js          # User routes (template)
+│   ├── login.js             # Authentication routes
+│   ├── organiser.js         # Organiser routes
+│   └── attendee.js          # Attendee routes
 ├── views/
-│   ├── home.ejs                # Landing page
-│   ├── login.ejs               # Chef login page
-│   ├── dashboard.ejs      # Chef dashboard
-│   ├── workshop_form.ejs          # Workshop editor
-│   ├── configure.ejs       # Academy settings
-│   ├── reservations.ejs       # Reservation summary
-│   ├── catalog.ejs       # Guest workshop listing
-│   ├── workshop_detail.ejs      # Workshop detail/booking
-│   ├── receipt.ejs # Reservation confirmation
-│   └── add_user.ejs            # Add user (template)
+│   ├── home.ejs             # Main home page
+│   ├── login.ejs            # Login page
+│   ├── organiser_home.ejs   # Organiser dashboard
+│   ├── site_settings.ejs    # Site settings
+│   ├── edit_event.ejs       # Event edit form
+│   ├── view_bookings.ejs    # Booking summary
+│   ├── view_waitlist.ejs    # Waitlist management [EXT]
+│   ├── attendee_home.ejs    # Attendee event list
+│   ├── attendee_event.ejs   # Event details & booking
+│   └── booking_confirmation.ejs
 └── public/
-    ├── main.css          # Global styles
-    ├── home.css          # Landing page styles
-    ├── organiser.css     # Chef dashboard styles
-    ├── attendee.css      # Guest portal styles
-    └── login.css         # Login page styles
+    ├── main.css
+    ├── home.css
+    ├── login.css
+    ├── organiser.css
+    └── attendee.css
 ```
 
-## Database Schema
+## Extension Features
 
-### Tables
-* `settings` : Site name and description
-* `categories` : Workshop categories (extension)
-* `events` : Workshop details
-* `tickets` : Seat types and pricing
-* `bookings` : Guest reservations
-* `organisers` : Chef login credentials
-
-## Extension Implementation
-
-The extension adds practical features for a cooking workshop context:
-
-1. **Categories**: Workshops can be assigned to categories like Italian Cuisine, Baking, or Knife Skills. Guests can filter workshops by category.
-
-2. **Email Capture**: Guests provide their email during booking for confirmation purposes.
-
-3. **Dietary Notes**: Guests can specify allergies or dietary requirements (vegetarian, gluten free, nut allergy, etc.). These are displayed to the chef in the reservation summary.
-
-These features demonstrate additional database design, server side filtering, and form handling beyond the base requirements.
+1. **Category Filtering** - Events can be filtered by category
+2. **Authentication** - Organiser login with bcrypt password hashing
+3. **Email Capture** - Optional email field for bookings
+4. **Dietary Notes** - Capture dietary requirements
+5. **Waitlist System** - Queue for sold-out events with position tracking

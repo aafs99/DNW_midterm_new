@@ -1,12 +1,13 @@
-<!-- reservations.ejs -->
-<!-- Reservation summary page for the organiser -->
-<!-- START -->
+<!--
+  view_bookings.ejs
+  View Bookings Page - Shows all reservations grouped by event
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservation Summary | flavour Academy</title>
+    <title>View Bookings | Flavour Academy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/organiser.css">
@@ -14,25 +15,21 @@
 </head>
 <body>
 
-    <!-- navigation bar -->
     <nav class="navbar navbar-custom mb-4">
         <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
-            <span class="navbar-brand mb-0">flavour Academy</span>
+            <span class="navbar-brand mb-0">Flavour Academy</span>
         </div>
     </nav>
 
-    <!-- logout button -->
     <div class="mt-2 mb-4 home-btn-left">
-        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+        <a href="/organiser" class="btn btn-outline-light btn-sm">Back</a>
     </div>
 
-    <!-- page header -->
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Workshop Reservations</h1>
-<!-- END -->
+        <h1 class="text-center mb-4">View Bookings</h1>
 
-        <% if (events.length === 0) { %>
-            <p class="text-center text-muted">No workshops found.</p>
+        <% if (typeof events === 'undefined' || events.length === 0) { %>
+            <p class="text-center text-muted">No events found.</p>
         <% } else { %>
             <% events.forEach(event => { %>
                 <div class="card card-accent mb-4">
@@ -41,69 +38,53 @@
                         <small class="text-muted">Date: <%= event.event_date %></small>
                     </div>
                     <div class="card-body">
-                        <% if (event.bookings.length === 0) { %>
-                            <p class="text-muted">No reservations yet for this workshop.</p>
+                        <% if (!event.bookings || event.bookings.length === 0) { %>
+                            <p class="text-muted">No bookings for this event.</p>
                         <% } else { %>
                             <div class="table-responsive">
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th>Guest Name</th>
+                                            <th>Name</th>
                                             <th>Email</th>
-                                            <th>Seat Type</th>
+                                            <th>Type</th>
                                             <th>Qty</th>
                                             <th>Dietary Notes</th>
-                                            <th>Booked On</th>
+                                            <th>Booked</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <% event.bookings.forEach(b => { %>
+                                        <% event.bookings.forEach(booking => { %>
                                             <tr>
-                                                <td><strong><%= b.attendee_name %></strong></td>
-                                                <td><%= b.attendee_email || 'N/A' %></td>
+                                                <td><%= booking.attendee_name %></td>
+                                                <td><%= booking.attendee_email || '-' %></td>
+                                                <td><%= booking.ticket_type === 'full' ? 'Full' : 'Concession' %></td>
+                                                <td><%= booking.quantity %></td>
                                                 <td>
-                                                    <% if (b.ticket_type === 'full') { %>
-                                                        Standard
-                                                    <% } else if (b.ticket_type === 'concession') { %>
-                                                        Student/Senior
+                                                    <% if (booking.dietary_notes) { %>
+                                                        <span class="badge bg-warning text-dark"><%= booking.dietary_notes %></span>
                                                     <% } else { %>
-                                                        <%= b.ticket_type %>
+                                                        -
                                                     <% } %>
                                                 </td>
-                                                <td><%= b.quantity %></td>
-                                                <td>
-                                                    <% if (b.dietary_notes) { %>
-                                                        <span class="badge bg-warning text-dark"><%= b.dietary_notes %></span>
-                                                    <% } else { %>
-                                                        <span class="text-muted">None</span>
-                                                    <% } %>
-                                                </td>
-                                                <td><%= b.booking_date.slice(0, 10) %></td>
+                                                <td><%= booking.booking_date.slice(0, 10) %></td>
                                             </tr>
                                         <% }) %>
                                     </tbody>
                                 </table>
                             </div>
-                            <!-- booking count summary -->
-                            <p class="mt-2 mb-0">
-                                <strong>Total Reservations:</strong> <%= event.bookings.length %>
-                            </p>
+                            <p class="text-muted small">Total: <%= event.bookings.reduce((sum, b) => sum + b.quantity, 0) %> tickets booked</p>
                         <% } %>
                     </div>
                 </div>
             <% }) %>
         <% } %>
 
-<!-- START -->
-        <!-- back to chef dashboard -->
         <div class="text-center mt-4">
-            <a href="/organiser" class="btn btn-accent">Back to Organiser Home Page</a>
+            <a href="/organiser" class="btn btn-accent">Back to Dashboard</a>
         </div>
     </div>
 
-    <!-- footer spacing -->
     <div class="mb-5"></div>
-
 </body>
 </html>
-<!-- END -->

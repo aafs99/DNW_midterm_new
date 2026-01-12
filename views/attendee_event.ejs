@@ -1,230 +1,159 @@
-<!-- attendee_event.ejs -->
-<!-- Workshop detail and booking page for guests -->
-<!-- Includes waitlist functionality when sold out (EXTENSION) -->
-<!-- START -->
+<!--
+  attendee_event.ejs
+  Attendee Event Page
+  Requirement: Display event details, booking form, validate availability
+-->
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title><%= event.title %> | flavour Academy</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap">
-        <link rel="stylesheet" href="/attendee.css">
-        <link rel="stylesheet" href="/main.css">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= event.title %> | Flavour Academy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap">
+    <link rel="stylesheet" href="/attendee.css">
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+    
+    <nav class="navbar navbar-custom mb-4">
+        <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
+            <span class="navbar-brand mb-0">Flavour Academy</span>
+        </div>
+    </nav>
+
+    <div class="mt-2 mb-4 home-btn-left">
+        <a href="/attendee" class="btn btn-outline-light btn-sm">Back</a>
+    </div>
+
+    <!-- Flash Messages -->
+    <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+        <div class="container">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <%= success[0] %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= error[0] %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    <% } %>
+
+    <!-- Event Details -->
+    <div class="container text-center mt-5">
+        <h1 class="mb-3">Attendee Event Page</h1>
+        <h2 class="mb-2"><%= event.title %></h2>
+        <h5 class="text-info mb-3"><%= event.event_date %></h5>
+        <p class="text-light mb-4" style="max-width: 600px; margin: 0 auto;"><%= event.description %></p>
+    </div>
+
+    <% if (typeof isSoldOut !== 'undefined' && isSoldOut) { %>
+    <!-- SOLD OUT - Show Waitlist Form [EXTENSION] -->
+    <div class="container mt-4" style="max-width: 600px;">
+        <div class="alert alert-warning text-center">
+            <h4 class="alert-heading">Sold Out!</h4>
+            <p>All tickets for this event have been booked.</p>
+            <% if (typeof waitlistCount !== 'undefined' && waitlistCount > 0) { %>
+                <p class="mb-0"><small><%= waitlistCount %> people on the waitlist</small></p>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="container mt-4" style="max-width: 600px;">
+        <h3 class="text-center mb-4">Join the Waitlist</h3>
         
-        <!-- navigation bar -->
-        <nav class="navbar navbar-custom mb-4">
-            <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
-                <span class="navbar-brand mb-0">flavour Academy</span>
+        <form method="POST" action="/attendee/event/<%= event.event_id %>/waitlist" class="card card-accent p-4">
+            <div class="mb-3">
+                <label for="attendee_name" class="form-label">Your Name *</label>
+                <input type="text" class="form-control" id="attendee_name" name="attendee_name" required minlength="2">
             </div>
-        </nav>
-    
-        <!-- back to guest portal -->
-        <div class="mt-2 mb-4 home-btn-left">
-            <a href="/attendee" class="btn btn-outline-light btn-sm">Back to Workshops</a>
-        </div>
 
-        <!-- flash messages -->
-        <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
-            <div class="container">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <%= success[0] %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            <div class="mb-3">
+                <label for="attendee_email" class="form-label">Email Address *</label>
+                <input type="email" class="form-control" id="attendee_email" name="attendee_email" required>
+                <div class="form-text">Required for notification</div>
             </div>
-        <% } %>
-        <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
-            <div class="container">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <%= error[0] %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+
+            <div class="mb-3">
+                <label for="ticket_type" class="form-label">Preferred Ticket Type</label>
+                <select class="form-select" id="ticket_type" name="ticket_type">
+                    <option value="full">Full Price</option>
+                    <option value="concession">Concession</option>
+                </select>
             </div>
-        <% } %>
 
-        <!-- workshop details -->
-        <div class="container text-center mt-5">
-            <h1 class="mb-3">Attendee Event Page</h1>
-            <h2 class="mb-2"><%= event.title %></h2>
-            <h5 class="text-info mb-3"><%= event.event_date %></h5>
-            <p class="text-light mb-4" style="max-width: 600px; margin: 0 auto;"><%= event.description %></p>
-        </div>
-
-        <!-- SOLD OUT NOTICE (EXTENSION) -->
-        <% if (typeof isSoldOut !== 'undefined' && isSoldOut) { %>
-        <div class="container mt-4" style="max-width: 600px;">
-            <div class="alert alert-warning text-center">
-                <h4 class="alert-heading">Sold Out!</h4>
-                <p>All seats for this workshop have been booked.</p>
-                <% if (typeof waitlistCount !== 'undefined' && waitlistCount > 0) { %>
-                    <p class="mb-0"><small><%= waitlistCount %> people currently on the waitlist</small></p>
-                <% } %>
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Tickets Needed</label>
+                <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="<%= maxPerBooking %>" value="1">
             </div>
-        </div>
 
-        <!-- WAITLIST FORM (EXTENSION) -->
-        <div class="container mt-4" style="max-width: 600px;">
-            <h3 class="text-center mb-4">Join the Waitlist</h3>
-            <p class="text-center text-muted mb-4">We'll notify you by email if seats become available.</p>
-            
-            <form method="POST" action="/attendee/event/<%= event.event_id %>/waitlist" class="card-accent p-4 rounded shadow">
-                
-                <!-- guest name -->
+            <button type="submit" class="btn btn-warning btn-lg">Join Waitlist</button>
+        </form>
+    </div>
+
+    <% } else { %>
+    <!-- BOOKING FORM -->
+    <div class="container mt-5" style="max-width: 600px;">
+        <h3 class="text-center mb-4">Book Tickets</h3>
+        
+        <form method="POST" action="/attendee/event/<%= event.event_id %>/book" class="card card-accent p-4">
+
+            <div class="mb-3">
+                <label for="attendee_name" class="form-label">Your Name *</label>
+                <input type="text" class="form-control" id="attendee_name" name="attendee_name" required minlength="2">
+            </div>
+
+            <div class="mb-3">
+                <label for="attendee_email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="attendee_email" name="attendee_email">
+                <div class="form-text">For booking confirmation</div>
+            </div>
+
+            <% tickets.forEach(ticket => { %>
                 <div class="mb-3">
-                    <label for="attendee_name" class="form-label">Your Name <span class="text-danger">*</span></label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="attendee_name"
-                        name="attendee_name"
-                        placeholder="Enter your full name"
-                        required
-                        minlength="2"
+                    <label class="form-label">
+                        <%= ticket.type === 'full' ? 'Full Price' : 'Concession' %> Ticket
+                        (£<%= ticket.price.toFixed(2) %>)
+                        <% if (ticket.remaining > 0) { %>
+                            <span class="text-success">| <%= ticket.remaining %> available</span>
+                        <% } else { %>
+                            <span class="text-danger">| Sold Out</span>
+                        <% } %>
+                    </label>
+                    <input 
+                        type="number" 
+                        name="<%= ticket.type %>_quantity" 
+                        class="form-control" 
+                        min="0" 
+                        max="<%= ticket.remaining %>"
+                        value="0"
+                        <%= ticket.remaining === 0 ? 'disabled' : '' %>
                     >
                 </div>
+            <% }) %>
 
-                <!-- guest email (required for waitlist) -->
-                <div class="mb-3">
-                    <label for="attendee_email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                    <input
-                        type="email"
-                        class="form-control"
-                        id="attendee_email"
-                        name="attendee_email"
-                        placeholder="your.email@example.com"
-                        required
-                    >
-                    <div class="form-text">Required for waitlist notification</div>
-                </div>
+            <!-- Dietary Notes [EXTENSION] -->
+            <div class="mb-3">
+                <label for="dietary_notes" class="form-label">Dietary Requirements</label>
+                <textarea class="form-control" id="dietary_notes" name="dietary_notes" rows="2" placeholder="Any allergies or dietary requirements..."></textarea>
+            </div>
 
-                <!-- preferred ticket type -->
-                <div class="mb-3">
-                    <label for="ticket_type" class="form-label">Preferred Seat Type</label>
-                    <select class="form-select" id="ticket_type" name="ticket_type">
-                        <option value="full">Standard Seat</option>
-                        <option value="concession">Student/Senior Seat</option>
-                    </select>
-                </div>
+            <button type="submit" class="btn btn-accent btn-lg">Book</button>
+        </form>
+    </div>
+    <% } %>
 
-                <!-- quantity wanted -->
-                <div class="mb-3">
-                    <label for="quantity" class="form-label">Number of Seats Needed</label>
-                    <input
-                        type="number"
-                        class="form-control"
-                        id="quantity"
-                        name="quantity"
-                        min="1"
-                        max="<%= typeof maxPerBooking !== 'undefined' ? maxPerBooking : 10 %>"
-                        value="1"
-                    >
-                </div>
+    <div class="container mt-4 text-center">
+        <a href="/attendee" class="btn btn-outline-light">Back to Events</a>
+    </div>
 
-                <!-- submit button -->
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-warning btn-lg">Join Waitlist</button>
-                </div>
-            </form>
-        </div>
+    <div class="mb-5"></div>
 
-        <% } else { %>
-        <!-- REGULAR BOOKING FORM (when seats available) -->
-    
-        <div class="container mt-5" style="max-width: 600px;">
-            <h3 class="text-center mb-4">Reserve Your Seats</h3>
-            
-            <form method="POST" action="/attendee/event/<%= event.event_id %>/book" class="card-accent p-4 rounded shadow">
-    
-                <!-- guest name -->
-                <div class="mb-3">
-                    <label for="attendee_name" class="form-label">Your Name <span class="text-danger">*</span></label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="attendee_name"
-                        name="attendee_name"
-                        placeholder="Enter your full name"
-                        required
-                    >
-                </div>
-
-                <!-- guest email (extension feature) -->
-                <div class="mb-3">
-                    <label for="attendee_email" class="form-label">Email Address</label>
-                    <input
-                        type="email"
-                        class="form-control"
-                        id="attendee_email"
-                        name="attendee_email"
-                        placeholder="your.email@example.com"
-                    >
-                    <div class="form-text">For reservation confirmation</div>
-                </div>
-    
-                <!-- seat selection -->
-                <% tickets.forEach(ticket => { %>
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <% if (ticket.type === 'full') { %>
-                                Standard Seat
-                            <% } else if (ticket.type === 'concession') { %>
-                                Student/Senior Seat
-                            <% } else { %>
-                                <%= ticket.type.charAt(0).toUpperCase() + ticket.type.slice(1) %> Seat
-                            <% } %>
-                            ($<%= ticket.price.toFixed(2) %>)
-                            <% if (ticket.remaining > 0) { %>
-                                <span class="text-success">| Available: <%= ticket.remaining %></span>
-                            <% } else { %>
-                                <span class="text-danger">| Sold Out</span>
-                            <% } %>
-                        </label>
-                        <input
-                            type="number"
-                            name="<%= ticket.type %>_quantity"
-                            class="form-control"
-                            min="0"
-                            max="<%= ticket.remaining %>"
-                            value="0"
-                            <%= ticket.remaining === 0 ? 'disabled' : '' %>
-                        >
-                    </div>
-                <% }) %>
-
-                <!-- dietary requirements (extension feature) -->
-                <div class="mb-3">
-                    <label for="dietary_notes" class="form-label">Dietary Requirements or Allergies</label>
-                    <textarea
-                        class="form-control"
-                        id="dietary_notes"
-                        name="dietary_notes"
-                        rows="2"
-                        placeholder="e.g. Vegetarian, nut allergy, gluten free..."
-                    ></textarea>
-                    <div class="form-text">Please let us know of any dietary restrictions</div>
-                </div>
-    
-                <!-- submit button -->
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-accent btn-lg">Reserve Seats</button>
-                </div>
-    
-            </form>
-        </div>
-        <% } %>
-
-        <!-- back link -->
-        <div class="container mt-4 text-center">
-            <a href="/attendee" class="text-main text-decoration-none">Back to All Workshops</a>
-        </div>
-
-        <!-- footer spacing -->
-        <div class="mb-5"></div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
-<!-- END -->

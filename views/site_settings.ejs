@@ -1,12 +1,14 @@
-<!-- site_settings.ejs -->
-<!-- Academy settings page for updating site name and description -->
-<!-- START -->
+<!--
+  site_settings.ejs
+  Site Settings Page
+  Requirement: Form to update site name and description
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academy Settings | flavour Academy</title>
+    <title>Site Settings | Flavour Academy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/organiser.css">
@@ -14,89 +16,52 @@
 </head>
 <body>
 
-    <!-- navigation bar -->
     <nav class="navbar navbar-custom mb-4">
         <div class="container-fluid justify-content-end align-items-center" style="height: 100%;">
-            <span class="navbar-brand mb-0">flavour Academy</span>
+            <span class="navbar-brand mb-0">Flavour Academy</span>
         </div>
     </nav>
 
-    <!-- logout button -->
     <div class="mt-2 mb-4 home-btn-left">
-        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+        <a href="/organiser" class="btn btn-outline-light btn-sm">Back</a>
     </div>
 
-    <!-- page container -->
     <div class="container mt-5" style="max-width: 600px;">
-
-        <!-- page heading -->
         <h1 class="mb-4 text-center">Site Settings Page</h1>
-<!-- END -->
 
-        <!-- settings form -->
-        <form method="POST" action="/organiser/settings" class="needs-validation" novalidate>
-
-            <!-- academy name input -->
+        <form method="POST" action="/organiser/settings" class="card card-accent p-4">
             <div class="mb-3">
-                <label for="siteName" class="form-label">Academy Name:</label>
-                <input
-                    type="text"
-                    id="siteName"
-                    name="site_name"
+                <label for="site_name" class="form-label">Site Name</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="site_name" 
+                    name="site_name" 
                     value="<%= settings.site_name %>"
-                    class="form-control"
-                    placeholder="e.g. flavour Academy"
                     required
-                />
-                <div class="invalid-feedback">
-                    Please enter the academy name.
-                </div>
+                    maxlength="100"
+                >
             </div>
 
-            <!-- academy description input -->
-            <div class="mb-4">
-                <label for="siteDescription" class="form-label">Academy Description:</label>
-                <textarea
-                    id="siteDescription"
-                    name="site_description"
-                    class="form-control"
-                    rows="4"
-                    placeholder="Describe your cooking academy and what you offer..."
+            <div class="mb-3">
+                <label for="site_description" class="form-label">Site Description</label>
+                <textarea 
+                    class="form-control" 
+                    id="site_description" 
+                    name="site_description" 
+                    rows="3"
                     required
+                    maxlength="500"
                 ><%= settings.site_description %></textarea>
-                <div class="invalid-feedback">
-                    Please enter the academy description.
-                </div>
             </div>
-            
-<!-- START -->
-            <!-- save button -->
-            <button type="submit" class="btn btn-outline-accent w-100">Save Settings</button>
-        </form>
 
-        <!-- back to chef dashboard -->
-        <div class="mt-4 text-center">
-            <a href="/organiser" class="text-main text-decoration-none">Back to Chef Dashboard</a>
-        </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-accent">Save Changes</button>
+                <a href="/organiser" class="btn btn-outline-light">Cancel</a>
+            </div>
+        </form>
     </div>
 
-    <!-- bootstrap form validation script -->
-    <script>
-        (() => {
-            'use strict';
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        })();
-    </script>
-
+    <div class="mb-5"></div>
 </body>
 </html>
-<!-- END -->

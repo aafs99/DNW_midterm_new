@@ -1,28 +1,21 @@
 /**
- * organiser.js
- * Chef Dashboard Routes for flavour Academy
- *
- * @description Handles workshop CRUD operations, settings management,
- * and reservation viewing with authentication middleware
- * @requires express-session for authentication
+ * routes/organiser.js
+ * Organiser Dashboard Routes
+ * 
+ * Purpose: Handle event management, settings, bookings, and waitlist
+ * Database: Uses global.db (single connection from index.js)
+ * Authentication: All routes protected by middleware
  */
 
 const express = require('express');
 const router = express.Router();
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./database.db');
 
 // =============================================================================
 // AUTHENTICATION MIDDLEWARE
+// Purpose: Protect all organiser routes from unauthorized access
+// Input: req.session.authenticated
+// Output: Continues if authenticated, redirects to /login if not
 // =============================================================================
-
-/**
- * Authentication Guard
- * @description Protects all organiser routes from unauthorized access
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next middleware function
- */
 router.use((req, res, next) => {
     if (req.session && req.session.authenticated) {
         next();
@@ -36,9 +29,10 @@ router.use((req, res, next) => {
 // =============================================================================
 
 /**
- * Formats ISO date string to human readable format
- * @param {string} dateString - ISO date string
- * @returns {string} Formatted date (e.g., "15 Jan 2025, 14:30")
+ * formatDate
+ * Purpose: Convert ISO date string to readable format
+ * Input: dateString (ISO format)
+ * Output: Formatted string e.g. "15 Jan 2025, 14:30"
  */
 function formatDate(dateString) {
     if (!dateString) return '';
@@ -53,22 +47,23 @@ function formatDate(dateString) {
 }
 
 /**
- * Calculates remaining tickets for each event
- * @param {Array} events - Array of event objects
- * @returns {Promise} Resolves when all events have ticket info
+ * calculateRemainingTickets
+ * Purpose: Calculate remaining tickets for each event
+ * Input: events (array)
+ * Output: Promise - resolves when all events have remainingTickets property
+ * Database: SELECT from tickets and bookings tables
  */
-function addRemainingTicketInfo(events) {
+function calculateRemainingTickets(events) {
     return Promise.all(events.map(event => {
         return new Promise(resolve => {
-            db.all(
-                `SELECT type, quantity FROM tickets WHERE event_id = ?`,
+            global.db.all(
+                'SELECT type, quantity FROM tickets WHERE event_id = ?',
                 [event.event_id],
                 (err, tickets) => {
                     if (err) return resolve();
 
-                    db.all(
-                        `SELECT ticket_type, SUM(quantity) as booked
-                         FROM bookings WHERE event_id = ? GROUP BY ticket_type`,
+                    global.db.all(
+                        'SELECT ticket_type, SUM(quantity) as booked FROM bookings WHERE event_id = ? GROUP BY ticket_type',
                         [event.event_id],
                         (err2, bookings) => {
                             if (err2) return resolve();
@@ -90,9 +85,10 @@ function addRemainingTicketInfo(events) {
 }
 
 /**
- * Validates workshop date is in future
- * @param {string} dateString - Date string to validate
- * @returns {boolean} True if date is today or future
+ * isValidFutureDate
+ * Purpose: Check if date is today or in the future
+ * Input: dateString
+ * Output: boolean
  */
 function isValidFutureDate(dateString) {
     const inputDate = new Date(dateString);
@@ -102,136 +98,97 @@ function isValidFutureDate(dateString) {
 }
 
 /**
- * Sanitizes string input
- * @param {string} str - Input string
- * @returns {string} Sanitized string
+ * sanitizeInput
+ * Purpose: Basic XSS protection
+ * Input: str (string)
+ * Output: Sanitized string
  */
-function sanitize(str) {
+function sanitizeInput(str) {
     if (!str) return '';
     return str.replace(/[<>]/g, '');
 }
 
 // =============================================================================
-// ROUTES
+// ORGANISER HOME PAGE
 // =============================================================================
 
 /**
  * GET /organiser
- * @description Display chef dashboard with all workshops
- * @returns {HTML} Renders dashboard/organiser_home template
+ * Purpose: Display organiser home page with all events
+ * Input: None
+ * Output: Renders organiser_home.ejs with settings, published and draft events
+ * Database: SELECT from settings, events tables
  */
 router.get('/', (req, res) => {
-    const siteQuery = 'SELECT * FROM settings WHERE id = 1';
-    const publishedQuery = "SELECT * FROM events WHERE status = 'published' ORDER BY event_date ASC";
-    const draftQuery = "SELECT * FROM events WHERE status = 'draft' ORDER BY created_at DESC";
-
-    db.get(siteQuery, [], (err, settings) => {
+    global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
         if (err) {
             console.error('Settings error:', err);
             return res.status(500).send('Settings error');
         }
 
-        db.all(publishedQuery, [], (err2, publishedEvents) => {
-            if (err2) {
-                console.error('Published events error:', err2);
-                return res.status(500).send('Workshop error');
-            }
-
-            db.all(draftQuery, [], async (err3, draftEvents) => {
-                if (err3) {
-                    console.error('Draft events error:', err3);
-                    return res.status(500).send('Draft error');
+        global.db.all(
+            "SELECT * FROM events WHERE status = 'published' ORDER BY event_date ASC",
+            [],
+            (err2, publishedEvents) => {
+                if (err2) {
+                    console.error('Published events error:', err2);
+                    return res.status(500).send('Event error');
                 }
 
-                const allEvents = [...publishedEvents, ...draftEvents];
-                await addRemainingTicketInfo(allEvents);
+                global.db.all(
+                    "SELECT * FROM events WHERE status = 'draft' ORDER BY created_at DESC",
+                    [],
+                    async (err3, draftEvents) => {
+                        if (err3) {
+                            console.error('Draft events error:', err3);
+                            return res.status(500).send('Draft error');
+                        }
 
-                // Format timestamps
-                publishedEvents.forEach(event => {
-                    event.created_at_formatted = formatDate(event.created_at);
-                    event.published_at_formatted = formatDate(event.published_at);
-                    event.updated_at_formatted = formatDate(event.updated_at);
-                });
+                        await calculateRemainingTickets([...publishedEvents, ...draftEvents]);
 
-                draftEvents.forEach(event => {
-                    event.created_at_formatted = formatDate(event.created_at);
-                    event.updated_at_formatted = formatDate(event.updated_at);
-                });
+                        publishedEvents.forEach(event => {
+                            event.created_at_formatted = formatDate(event.created_at);
+                            event.published_at_formatted = formatDate(event.published_at);
+                            event.updated_at_formatted = formatDate(event.updated_at);
+                        });
 
-                res.render('organiser_home', {
-                    settings,
-                    publishedEvents,
-                    draftEvents
-                });
-            });
-        });
-    });
-});
+                        draftEvents.forEach(event => {
+                            event.created_at_formatted = formatDate(event.created_at);
+                            event.updated_at_formatted = formatDate(event.updated_at);
+                        });
 
-/**
- * POST /organiser/delete/:id
- * @description Delete a workshop and associated data
- * @param {number} req.params.id - Workshop ID to delete
- * @returns {Redirect} To dashboard
- */
-router.post('/delete/:id', (req, res) => {
-    const eventId = req.params.id;
-
-    if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid workshop ID');
-    }
-
-    db.run('DELETE FROM events WHERE event_id = ?', [eventId], function(err) {
-        if (err) {
-            console.error('Delete error:', err);
-            return res.status(500).send('Delete failed');
-        }
-        res.redirect('/organiser');
-    });
-});
-
-/**
- * POST /organiser/publish/:id
- * @description Publish a draft workshop
- * @param {number} req.params.id - Workshop ID to publish
- * @returns {Redirect} To dashboard
- */
-router.post('/publish/:id', (req, res) => {
-    const eventId = req.params.id;
-
-    if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid workshop ID');
-    }
-
-    const publishedAt = new Date().toISOString();
-
-    db.run(
-        "UPDATE events SET status = 'published', published_at = ? WHERE event_id = ?",
-        [publishedAt, eventId],
-        function(err) {
-            if (err) {
-                console.error('Publish error:', err);
-                return res.status(500).send('Publish failed');
+                        res.render('organiser_home', {
+                            settings,
+                            publishedEvents,
+                            draftEvents
+                        });
+                    }
+                );
             }
-            res.redirect('/organiser');
-        }
-    );
+        );
+    });
 });
+
+// =============================================================================
+// EVENT CRUD OPERATIONS
+// =============================================================================
 
 /**
  * GET /organiser/create
- * @description Create new draft workshop and redirect to edit
- * @returns {Redirect} To edit page for new workshop
+ * Purpose: Create new draft event and redirect to edit page
+ * Input: None
+ * Output: Redirects to /organiser/edit/:id
+ * Database: INSERT into events table
  */
 router.get('/create', (req, res) => {
     const now = new Date().toISOString();
     const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 7); // Default to 1 week from now
+    defaultDate.setDate(defaultDate.getDate() + 7);
     const defaultDateStr = defaultDate.toISOString().split('T')[0];
 
-    db.run(
+    global.db.run(
         "INSERT INTO events (title, description, event_date, created_at, updated_at, status) VALUES (?, ?, ?, ?, ?, 'draft')",
-        ['New Workshop', '', defaultDateStr, now, now],
+        ['New Event', '', defaultDateStr, now, now],
         function(err) {
             if (err) {
                 console.error('Create error:', err);
@@ -243,120 +200,35 @@ router.get('/create', (req, res) => {
 });
 
 /**
- * GET /organiser/view-bookings
- * @description Display all reservations grouped by workshop
- * @returns {HTML} Renders reservations/view_bookings template
- */
-router.get('/view-bookings', (req, res) => {
-    const eventQuery = `SELECT * FROM events ORDER BY event_date ASC`;
-
-    db.all(eventQuery, [], (err, events) => {
-        if (err) {
-            console.error('Events error:', err);
-            return res.status(500).send("Failed to fetch workshops");
-        }
-
-        const all = Promise.all(events.map(event => {
-            return new Promise(resolve => {
-                db.all(
-                    `SELECT attendee_name, attendee_email, ticket_type, quantity, booking_date, dietary_notes
-                     FROM bookings WHERE event_id = ? ORDER BY booking_date ASC`,
-                    [event.event_id],
-                    (err2, bookings) => {
-                        event.bookings = bookings || [];
-                        resolve();
-                    }
-                );
-            });
-        }));
-
-        all.then(() => {
-            res.render('view_bookings', { events });
-        });
-    });
-});
-
-/**
- * GET /organiser/settings
- * @description Display site settings form
- * @returns {HTML} Renders configure/site_settings template
- */
-router.get('/settings', (req, res) => {
-    db.get('SELECT * FROM settings WHERE id = 1', (err, settings) => {
-        if (err || !settings) {
-            console.error('Settings error:', err);
-            return res.status(500).send("Settings not found");
-        }
-        res.render('site_settings', { settings });
-    });
-});
-
-/**
- * POST /organiser/settings
- * @description Update site settings
- * @param {string} req.body.site_name - Site name (required)
- * @param {string} req.body.site_description - Site description (required)
- * @returns {Redirect} To dashboard
- */
-router.post('/settings', (req, res) => {
-    const site_name = sanitize(req.body.site_name || '').trim();
-    const site_description = sanitize(req.body.site_description || '').trim();
-
-    // Validation
-    if (!site_name || !site_description) {
-        return res.status(400).send("Both name and description are required. <a href='/organiser/settings'>Go back</a>");
-    }
-
-    if (site_name.length > 100) {
-        return res.status(400).send("Site name must be under 100 characters. <a href='/organiser/settings'>Go back</a>");
-    }
-
-    if (site_description.length > 500) {
-        return res.status(400).send("Description must be under 500 characters. <a href='/organiser/settings'>Go back</a>");
-    }
-
-    db.run(
-        'UPDATE settings SET site_name = ?, site_description = ? WHERE id = 1',
-        [site_name, site_description],
-        (err) => {
-            if (err) {
-                console.error('Settings update error:', err);
-                return res.status(500).send("Update failed");
-            }
-            res.redirect('/organiser');
-        }
-    );
-});
-
-/**
  * GET /organiser/edit/:id
- * @description Display workshop edit form
- * @param {number} req.params.id - Workshop ID
- * @returns {HTML} Renders workshop_form/edit_event template
+ * Purpose: Display event edit form
+ * Input: req.params.id (event ID)
+ * Output: Renders edit_event.ejs with event data, tickets, categories
+ * Database: SELECT from events, tickets, categories tables
  */
 router.get('/edit/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid workshop ID');
+        return res.status(400).send('Invalid event ID');
     }
 
-    db.get('SELECT * FROM events WHERE event_id = ?', [eventId], (err, event) => {
+    global.db.get('SELECT * FROM events WHERE event_id = ?', [eventId], (err, event) => {
         if (err || !event) {
             console.error('Event error:', err);
-            return res.status(500).send("Workshop not found");
+            return res.status(404).send('Event not found');
         }
 
-        db.all('SELECT * FROM tickets WHERE event_id = ?', [eventId], (err2, tickets) => {
+        global.db.all('SELECT * FROM tickets WHERE event_id = ?', [eventId], (err2, tickets) => {
             if (err2) {
                 console.error('Tickets error:', err2);
-                return res.status(500).send("Ticket query failed");
+                return res.status(500).send('Ticket query failed');
             }
 
             const full = tickets.find(t => t.type === 'full') || { quantity: 0, price: 0 };
             const concession = tickets.find(t => t.type === 'concession') || { quantity: 0, price: 0 };
 
-            db.all('SELECT * FROM categories ORDER BY name ASC', [], (err3, categories) => {
+            global.db.all('SELECT * FROM categories ORDER BY name ASC', [], (err3, categories) => {
                 res.render('edit_event', {
                     event,
                     full,
@@ -370,92 +242,68 @@ router.get('/edit/:id', (req, res) => {
 
 /**
  * POST /organiser/edit/:id
- * @description Update workshop details
- * @param {number} req.params.id - Workshop ID
- * @param {string} req.body.title - Workshop title (required)
- * @param {string} req.body.description - Workshop description
- * @param {string} req.body.event_date - Workshop date (required, must be future)
- * @param {number} req.body.category_id - Category ID (optional)
- * @param {number} req.body.full_price - Standard seat price
- * @param {number} req.body.full_quantity - Standard seat quantity
- * @param {number} req.body.concession_price - Concession seat price
- * @param {number} req.body.concession_quantity - Concession seat quantity
- * @returns {Redirect} To dashboard
+ * Purpose: Update event details and ticket configuration
+ * Input: req.params.id, req.body (title, description, event_date, category_id, ticket data)
+ * Output: Redirects to /organiser
+ * Database: UPDATE events table, INSERT/UPDATE tickets table
  */
 router.post('/edit/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid workshop ID');
+        return res.status(400).send('Invalid event ID');
     }
 
-    // Extract and sanitize inputs
-    const title = sanitize(req.body.title || '').trim();
-    const description = sanitize(req.body.description || '').trim();
-    const event_date = req.body.event_date;
-    const category_id = req.body.category_id || null;
-    const full_price = parseFloat(req.body.full_price) || 0;
-    const full_quantity = parseInt(req.body.full_quantity) || 0;
-    const concession_price = parseFloat(req.body.concession_price) || 0;
-    const concession_quantity = parseInt(req.body.concession_quantity) || 0;
-
+    const title = sanitizeInput(req.body.title || '').trim();
+    const description = sanitizeInput(req.body.description || '').trim();
+    const eventDate = req.body.event_date;
+    const categoryId = req.body.category_id || null;
+    const fullPrice = parseFloat(req.body.full_price) || 0;
+    const fullQuantity = parseInt(req.body.full_quantity) || 0;
+    const concessionPrice = parseFloat(req.body.concession_price) || 0;
+    const concessionQuantity = parseInt(req.body.concession_quantity) || 0;
     const updatedAt = new Date().toISOString();
 
-    // Validation
     if (!title) {
-        return res.status(400).send("Title is required. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
+        return res.status(400).send('Title is required. <a href="/organiser/edit/' + eventId + '">Go back</a>');
     }
 
-    if (title.length > 200) {
-        return res.status(400).send("Title must be under 200 characters. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
+    if (!eventDate) {
+        return res.status(400).send('Event date is required. <a href="/organiser/edit/' + eventId + '">Go back</a>');
     }
 
-    if (!event_date) {
-        return res.status(400).send("Workshop date is required. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
+    if (!isValidFutureDate(eventDate)) {
+        return res.status(400).send('Event date must be today or in the future. <a href="/organiser/edit/' + eventId + '">Go back</a>');
     }
 
-    if (!isValidFutureDate(event_date)) {
-        return res.status(400).send("Workshop date must be today or in the future. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
+    if (fullPrice < 0 || concessionPrice < 0 || fullQuantity < 0 || concessionQuantity < 0) {
+        return res.status(400).send('Prices and quantities cannot be negative. <a href="/organiser/edit/' + eventId + '">Go back</a>');
     }
 
-    if (full_price < 0 || concession_price < 0) {
-        return res.status(400).send("Prices cannot be negative. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
-    }
-
-    if (full_quantity < 0 || concession_quantity < 0) {
-        return res.status(400).send("Quantities cannot be negative. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
-    }
-
-    if (full_quantity > 1000 || concession_quantity > 1000) {
-        return res.status(400).send("Maximum 1000 seats per type. <a href='/organiser/edit/" + eventId + "'>Go back</a>");
-    }
-
-    // Update event
-    db.run(
+    global.db.run(
         'UPDATE events SET title = ?, description = ?, event_date = ?, category_id = ?, updated_at = ? WHERE event_id = ?',
-        [title, description, event_date, category_id, updatedAt, eventId],
+        [title, description, eventDate, categoryId, updatedAt, eventId],
         function(err) {
             if (err) {
                 console.error('Update error:', err);
-                return res.status(500).send("Failed to update workshop.");
+                return res.status(500).send('Failed to update event');
             }
 
-            // Update or insert tickets
-            function saveTicket(eventId, type, price, quantity, callback) {
-                db.get(
+            const saveTicket = (type, price, quantity, callback) => {
+                global.db.get(
                     'SELECT COUNT(*) AS count FROM tickets WHERE event_id = ? AND type = ?',
                     [eventId, type],
-                    (err, row) => {
-                        if (err) return callback(err);
+                    (queryErr, row) => {
+                        if (queryErr) return callback(queryErr);
 
                         if (row.count > 0) {
-                            db.run(
+                            global.db.run(
                                 'UPDATE tickets SET price = ?, quantity = ? WHERE event_id = ? AND type = ?',
                                 [price, quantity, eventId, type],
                                 callback
                             );
                         } else {
-                            db.run(
+                            global.db.run(
                                 'INSERT INTO tickets (event_id, type, price, quantity) VALUES (?, ?, ?, ?)',
                                 [eventId, type, price, quantity],
                                 callback
@@ -463,20 +311,19 @@ router.post('/edit/:id', (req, res) => {
                         }
                     }
                 );
-            }
+            };
 
-            saveTicket(eventId, 'full', full_price, full_quantity, (err2) => {
+            saveTicket('full', fullPrice, fullQuantity, (err2) => {
                 if (err2) {
                     console.error('Ticket save error:', err2);
-                    return res.status(500).send("Failed to save standard seats.");
+                    return res.status(500).send('Failed to save tickets');
                 }
 
-                saveTicket(eventId, 'concession', concession_price, concession_quantity, (err3) => {
+                saveTicket('concession', concessionPrice, concessionQuantity, (err3) => {
                     if (err3) {
                         console.error('Ticket save error:', err3);
-                        return res.status(500).send("Failed to save concession seats.");
+                        return res.status(500).send('Failed to save tickets');
                     }
-
                     res.redirect('/organiser');
                 });
             });
@@ -484,22 +331,159 @@ router.post('/edit/:id', (req, res) => {
     );
 });
 
+/**
+ * POST /organiser/publish/:id
+ * Purpose: Change event status from draft to published
+ * Input: req.params.id (event ID)
+ * Output: Redirects to /organiser
+ * Database: UPDATE events table (status and published_at)
+ */
+router.post('/publish/:id', (req, res) => {
+    const eventId = req.params.id;
+
+    if (!eventId || isNaN(eventId)) {
+        return res.status(400).send('Invalid event ID');
+    }
+
+    const publishedAt = new Date().toISOString();
+
+    global.db.run(
+        "UPDATE events SET status = 'published', published_at = ? WHERE event_id = ?",
+        [publishedAt, eventId],
+        function(err) {
+            if (err) {
+                console.error('Publish error:', err);
+                return res.status(500).send('Publish failed');
+            }
+            res.redirect('/organiser');
+        }
+    );
+});
+
+/**
+ * POST /organiser/delete/:id
+ * Purpose: Delete event and associated data (tickets, bookings via CASCADE)
+ * Input: req.params.id (event ID)
+ * Output: Redirects to /organiser
+ * Database: DELETE from events table
+ */
+router.post('/delete/:id', (req, res) => {
+    const eventId = req.params.id;
+
+    if (!eventId || isNaN(eventId)) {
+        return res.status(400).send('Invalid event ID');
+    }
+
+    global.db.run('DELETE FROM events WHERE event_id = ?', [eventId], function(err) {
+        if (err) {
+            console.error('Delete error:', err);
+            return res.status(500).send('Delete failed');
+        }
+        res.redirect('/organiser');
+    });
+});
+
 // =============================================================================
-// WAITLIST MANAGEMENT ROUTES (EXTENSION)
-// Purpose: Allow organisers to view and manage waitlist entries
-// Demonstrates: Complex queries with JOINs, aggregations, queue management
+// SITE SETTINGS
+// =============================================================================
+
+/**
+ * GET /organiser/settings
+ * Purpose: Display site settings form
+ * Input: None
+ * Output: Renders site_settings.ejs with current settings
+ * Database: SELECT from settings table
+ */
+router.get('/settings', (req, res) => {
+    global.db.get('SELECT * FROM settings WHERE id = 1', (err, settings) => {
+        if (err || !settings) {
+            console.error('Settings error:', err);
+            return res.status(500).send('Settings not found');
+        }
+        res.render('site_settings', { settings });
+    });
+});
+
+/**
+ * POST /organiser/settings
+ * Purpose: Update site name and description
+ * Input: req.body.site_name, req.body.site_description
+ * Output: Redirects to /organiser
+ * Database: UPDATE settings table
+ */
+router.post('/settings', (req, res) => {
+    const siteName = sanitizeInput(req.body.site_name || '').trim();
+    const siteDescription = sanitizeInput(req.body.site_description || '').trim();
+
+    if (!siteName || !siteDescription) {
+        return res.status(400).send('Both fields are required. <a href="/organiser/settings">Go back</a>');
+    }
+
+    global.db.run(
+        'UPDATE settings SET site_name = ?, site_description = ? WHERE id = 1',
+        [siteName, siteDescription],
+        (err) => {
+            if (err) {
+                console.error('Settings update error:', err);
+                return res.status(500).send('Update failed');
+            }
+            res.redirect('/organiser');
+        }
+    );
+});
+
+// =============================================================================
+// VIEW BOOKINGS
+// =============================================================================
+
+/**
+ * GET /organiser/view-bookings
+ * Purpose: Display all bookings grouped by event
+ * Input: None
+ * Output: Renders view_bookings.ejs with events and their bookings
+ * Database: SELECT from events and bookings tables
+ */
+router.get('/view-bookings', (req, res) => {
+    global.db.all('SELECT * FROM events ORDER BY event_date ASC', [], (err, events) => {
+        if (err) {
+            console.error('Events error:', err);
+            return res.status(500).send('Failed to fetch events');
+        }
+
+        const promises = events.map(event => {
+            return new Promise(resolve => {
+                global.db.all(
+                    `SELECT attendee_name, attendee_email, ticket_type, quantity, booking_date, dietary_notes
+                     FROM bookings WHERE event_id = ? ORDER BY booking_date ASC`,
+                    [event.event_id],
+                    (err2, bookings) => {
+                        event.bookings = bookings || [];
+                        resolve();
+                    }
+                );
+            });
+        });
+
+        Promise.all(promises).then(() => {
+            res.render('view_bookings', { events });
+        });
+    });
+});
+
+// =============================================================================
+// WAITLIST MANAGEMENT [EXTENSION]
 // =============================================================================
 
 /**
  * GET /organiser/waitlist
- * @description Display all waitlist entries grouped by workshop
- * Shows queue position, contact details, and requested quantities
- * @returns {HTML} Renders waitlist management page
+ * Purpose: Display all waitlist entries grouped by event
+ * Input: None
+ * Output: Renders view_waitlist.ejs with grouped waitlist data
+ * Database: SELECT from waitlist and events tables with JOIN
  */
 router.get('/waitlist', (req, res) => {
-    // Complex query: Get waitlist entries with event info, ordered by request time
     const query = `
-        SELECT
+        SELECT 
             w.waitlist_id,
             w.attendee_name,
             w.attendee_email,
@@ -516,13 +500,12 @@ router.get('/waitlist', (req, res) => {
         ORDER BY e.event_date ASC, w.requested_at ASC
     `;
 
-    db.all(query, [], (err, entries) => {
+    global.db.all(query, [], (err, entries) => {
         if (err) {
             console.error('Waitlist query error:', err);
             return res.status(500).send('Failed to load waitlist');
         }
 
-        // Group entries by event for display
         const groupedByEvent = {};
         entries.forEach(entry => {
             if (!groupedByEvent[entry.event_id]) {
@@ -536,7 +519,6 @@ router.get('/waitlist', (req, res) => {
             groupedByEvent[entry.event_id].entries.push(entry);
         });
 
-        // Add position numbers to each entry
         Object.values(groupedByEvent).forEach(event => {
             event.entries.forEach((entry, index) => {
                 entry.position = index + 1;
@@ -552,9 +534,10 @@ router.get('/waitlist', (req, res) => {
 
 /**
  * POST /organiser/waitlist/remove/:id
- * @description Remove an entry from the waitlist
- * @param {number} req.params.id - Waitlist entry ID
- * @returns {Redirect} Back to waitlist page
+ * Purpose: Remove entry from waitlist
+ * Input: req.params.id (waitlist entry ID)
+ * Output: Redirects to /organiser/waitlist
+ * Database: UPDATE waitlist status to 'removed'
  */
 router.post('/waitlist/remove/:id', (req, res) => {
     const waitlistId = req.params.id;
@@ -563,13 +546,13 @@ router.post('/waitlist/remove/:id', (req, res) => {
         return res.status(400).send('Invalid waitlist ID');
     }
 
-    db.run(
+    global.db.run(
         "UPDATE waitlist SET status = 'removed' WHERE waitlist_id = ?",
         [waitlistId],
         function(err) {
             if (err) {
                 console.error('Waitlist remove error:', err);
-                return res.status(500).send('Failed to remove from waitlist');
+                return res.status(500).send('Remove failed');
             }
             res.redirect('/organiser/waitlist');
         }
@@ -578,10 +561,10 @@ router.post('/waitlist/remove/:id', (req, res) => {
 
 /**
  * POST /organiser/waitlist/notify/:id
- * @description Mark a waitlist entry as notified (simulates email notification)
- * In production, this would send an actual email
- * @param {number} req.params.id - Waitlist entry ID
- * @returns {Redirect} Back to waitlist page
+ * Purpose: Mark waitlist entry as notified
+ * Input: req.params.id (waitlist entry ID)
+ * Output: Redirects to /organiser/waitlist
+ * Database: UPDATE waitlist status and notified_at timestamp
  */
 router.post('/waitlist/notify/:id', (req, res) => {
     const waitlistId = req.params.id;
@@ -591,17 +574,14 @@ router.post('/waitlist/notify/:id', (req, res) => {
         return res.status(400).send('Invalid waitlist ID');
     }
 
-    // Update status and record notification time
-    db.run(
+    global.db.run(
         "UPDATE waitlist SET status = 'notified', notified_at = ? WHERE waitlist_id = ?",
         [now, waitlistId],
         function(err) {
             if (err) {
                 console.error('Waitlist notify error:', err);
-                return res.status(500).send('Failed to mark as notified');
+                return res.status(500).send('Notify failed');
             }
-            // In production: Send email to attendee here
-            // For demo: Just update the status
             res.redirect('/organiser/waitlist');
         }
     );

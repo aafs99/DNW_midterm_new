@@ -1,101 +1,22 @@
-/**
- * attendee.css
- * Styles for Attendee Home Page pages
- */
-/* START */
+/* attendee.css - Attendee page styles */
 
-body {
-    background-color: #0f172a !important;
-    font-family: 'Open Sans', 'Prompt', sans-serif;
-}
-
-/* Animated Carousel (if used) */
-.carousel-container {
-    overflow: hidden;
-    position: relative;
-    padding: 3rem 2rem;
-}
-
-.carousel-track {
-    display: flex;
-    width: max-content;
-    gap: 2rem;
-    animation: scroll-loop 20s linear infinite;
-}
-
-@keyframes scroll-loop {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-50%);
-    }
-}
-
-/* Card Styling */
 .card {
-    min-width: 300px;
-    max-width: 340px;
-    min-height: 280px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(196, 92, 38, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 168, 83, 0.2);
 }
 
-.card-img-top {
-    height: 180px;
-    object-fit: cover;
+.card-title {
+    color: #D4A853;
 }
 
-/* Form Styling */
-form.card-accent {
-    background-color: #1a1a1a;
+a.text-decoration-none .card {
+    cursor: pointer;
 }
 
-form label {
-    font-weight: 600;
-    color: #f8f9fa;
+a.text-decoration-none:hover {
+    text-decoration: none;
 }
-
-/* Number Input Spinners */
-input[type="number"]::-webkit-inner-spin-button {
-    opacity: 1;
-}
-
-/* Category Filter Buttons */
-.btn-sm {
-    padding: 0.4rem 1rem;
-    font-size: 0.85rem;
-}
-
-/* Grid Layout for Workshop Cards */
-.row.g-4 .card {
-    min-width: auto;
-    max-width: none;
-}
-
-/* Form Text Helper */
-.form-text {
-    color: #888;
-    font-size: 0.8rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .card {
-        min-width: 100%;
-        max-width: 100%;
-    }
-    
-    .carousel-container {
-        padding: 1rem;
-    }
-}
-
-/* END */

@@ -1,7 +1,7 @@
 {
   "name": "flavour-academy",
   "version": "1.0.0",
-  "description": "Event Manager for DNW Midterm: Restaurant Workshop Manager",
+  "description": "Event Manager For DNW Midterm: Cooking workshop booking system",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,18 +11,15 @@
     "clean-db-win": "del database.db",
     "start": "node index.js"
   },
-  "author": "asfa",
+  "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "connect-flash": "^0.1.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-session": "^1.18.1",
     "sqlite3": "^5.1.6"
-  },
-  "engines": {
-    "npm": ">=8.0.0",
-    "node": ">=16.0.0"
   }
 }
