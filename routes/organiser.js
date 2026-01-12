@@ -29,7 +29,7 @@ router.use((req, res, next) => {
 // SETTINGS MIDDLEWARE
 // Purpose: Load site settings for all organiser pages (for navbar/title)
 // Input: None
-// Output: res.locals.settings available in all templates
+// Output: res.locals.settings and res.locals.session available in all templates
 // =============================================================================
 router.use((req, res, next) => {
     global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
@@ -38,6 +38,8 @@ router.use((req, res, next) => {
         } else {
             res.locals.settings = settings;
         }
+        // Pass session data to templates
+        res.locals.session = req.session || {};
         next();
     });
 });
@@ -188,19 +190,22 @@ router.get('/edit/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid event ID');
+        req.flash('error', 'Invalid event ID.');
+        return res.redirect('/organiser');
     }
 
     global.db.get('SELECT * FROM events WHERE event_id = ?', [eventId], (err, event) => {
         if (err || !event) {
             console.error('Event error:', err);
-            return res.status(404).send('Event not found');
+            req.flash('error', 'Event not found.');
+            return res.redirect('/organiser');
         }
 
         global.db.all('SELECT * FROM tickets WHERE event_id = ?', [eventId], (err2, tickets) => {
             if (err2) {
                 console.error('Tickets error:', err2);
-                return res.status(500).send('Ticket query failed');
+                req.flash('error', 'Failed to load ticket data.');
+                return res.redirect('/organiser');
             }
 
             const full = tickets.find(t => t.type === 'full') || { quantity: 0, price: 0 };
@@ -329,7 +334,8 @@ router.post('/publish/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid event ID');
+        req.flash('error', 'Invalid event ID.');
+        return res.redirect('/organiser');
     }
 
     const publishedAt = new Date().toISOString();
@@ -340,8 +346,10 @@ router.post('/publish/:id', (req, res) => {
         function(err) {
             if (err) {
                 console.error('Publish error:', err);
-                return res.status(500).send('Publish failed');
+                req.flash('error', 'Failed to publish event.');
+                return res.redirect('/organiser');
             }
+            req.flash('success', 'Event published successfully.');
             res.redirect('/organiser');
         }
     );
@@ -358,14 +366,17 @@ router.post('/delete/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid event ID');
+        req.flash('error', 'Invalid event ID.');
+        return res.redirect('/organiser');
     }
 
     global.db.run('DELETE FROM events WHERE event_id = ?', [eventId], function(err) {
         if (err) {
             console.error('Delete error:', err);
-            return res.status(500).send('Delete failed');
+            req.flash('error', 'Failed to delete event.');
+            return res.redirect('/organiser');
         }
+        req.flash('success', 'Event deleted successfully.');
         res.redirect('/organiser');
     });
 });

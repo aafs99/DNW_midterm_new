@@ -23,6 +23,9 @@
     </nav>
 
     <div class="mt-2 mb-4 home-btn-left">
+        <% if (typeof session !== 'undefined' && session.username) { %>
+            <span class="text-light me-2">Welcome, <%= session.username %></span>
+        <% } %>
         <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
     </div>
 
