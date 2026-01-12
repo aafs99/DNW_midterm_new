@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 -- ORGANISERS TABLE [EXTENSION]
 -- Stores organiser login credentials for authentication
 -- Used by Login system, session management
--- All passwords are bcrypt hashed for security
+-- New registrations use bcrypt hashing, default admin uses plain text
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS organisers (
     organiser_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -102,9 +102,9 @@ CREATE TABLE IF NOT EXISTS organisers (
     created_at TEXT NOT NULL
 );
 
--- Default admin account (bcrypt hashed password - original: admin123)
+-- Default admin account (plain text for simplicity)
 INSERT INTO organisers (username, password, email, role, created_at)
-VALUES ('admin', '$2b$10$K8vPqDHJ5N3OGmYLgWqZxOYqGH8DvDnK7mRcY3E5H1KNjQ4q5mQZi', 'admin@example.com', 'admin', datetime('now'));
+VALUES ('admin', 'admin123', 'admin@example.com', 'admin', datetime('now'));
 
 -- ============================================================================
 -- WAITLIST TABLE [EXTENSION]

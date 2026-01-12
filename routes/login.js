@@ -30,12 +30,18 @@ async function hashPassword(password) {
 
 /**
  * verifyPassword
- * Purpose: Compare password against stored bcrypt hash
- * Input: password (string), storedHash (string)
+ * Purpose: Compare password against stored hash or plain text
+ * Supports both bcrypt hashed passwords and legacy plain text
+ * Input: password (string), storedPassword (string)
  * Output: Promise<boolean>
  */
-async function verifyPassword(password, storedHash) {
-    return await bcrypt.compare(password, storedHash);
+async function verifyPassword(password, storedPassword) {
+    // Check if stored password is bcrypt hash (starts with $2a$ or $2b$)
+    if (storedPassword.startsWith('$2a$') || storedPassword.startsWith('$2b$')) {
+        return await bcrypt.compare(password, storedPassword);
+    }
+    // Plain text comparison for legacy/default accounts
+    return password === storedPassword;
 }
 
 // =============================================================================
