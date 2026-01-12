@@ -75,14 +75,8 @@ A web application for managing cooking workshop events.
 
 ## Extension Features
 
-1. **Category Filtering** - Events can be categorised and filtered by category on the attendee page
-2. **Authentication** - Organiser login system with bcrypt password hashing
-3. **Email Capture** - Optional email field for booking confirmations
-4. **Dietary Notes** - Capture dietary requirements with bookings
-5. **Waitlist System** - Queue for sold-out events with position tracking and notification management
-
-## Security Notes
-
-- All passwords are hashed using bcrypt before storage
-- Session-based authentication protects organiser routes
-- Input sanitization helps prevent XSS attacks
+1. **Category Filtering** - Events can be filtered by category
+2. **Authentication** - Organiser login with bcrypt password hashing
+3. **Email Capture** - Optional email field for bookings
+4. **Dietary Notes** - Capture dietary requirements
+5. **Waitlist System** - Queue for sold-out events with position tracking
