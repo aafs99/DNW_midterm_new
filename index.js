@@ -1,6 +1,6 @@
 /**
  * index.js
- * Event Manager Application: Flavour Academy
+ * Event Manager Application - Flavour Academy
  * Main entry point
  */
 
@@ -25,9 +25,9 @@ app.use(express.static(__dirname + '/public'));
 
 // =============================================================================
 // SESSION CONFIGURATION
-// Manage user authentication sessions
-// Inputs HTTP requests
-// Outputs Session data attached to req.session
+// Purpose: Manage user authentication sessions
+// Input: HTTP requests
+// Output: Session data attached to req.session
 // =============================================================================
 app.use(session({
     secret: 'flavour-academy-secret-key',
@@ -42,9 +42,9 @@ app.use(session({
 
 // =============================================================================
 // FLASH MESSAGES
-// Display one-time messages across redirects
-// Inputs Messages set via req.flash()
-// Outputs Messages available in res.locals for templates
+// Purpose: Display one-time messages across redirects
+// Input: Messages set via req.flash()
+// Output: Messages available in res.locals for templates
 // =============================================================================
 app.use(flash());
 
@@ -56,9 +56,9 @@ app.use((req, res, next) => {
 
 // =============================================================================
 // DATABASE CONNECTION
-// Create single SQLite connection shared across all routes
-// Inputs Database file path
-// Outputs global.db available to all route modules
+// Purpose: Create single SQLite connection shared across all routes
+// Input: Database file path
+// Output: global.db available to all route modules
 // =============================================================================
 const sqlite3 = require('sqlite3').verbose();
 global.db = new sqlite3.Database('./database.db', function(err) {
@@ -77,9 +77,9 @@ global.db = new sqlite3.Database('./database.db', function(err) {
 
 /**
  * GET /
- * Display main home page with navigation links
- * Inputs None
- * Outputs Renders home.ejs with links to organiser and attendee pages
+ * Purpose: Display main home page with navigation links
+ * Input: None
+ * Output: Renders home.ejs with links to organiser and attendee pages
  */
 app.get('/', (req, res) => {
     res.render('home');
@@ -87,9 +87,9 @@ app.get('/', (req, res) => {
 
 /**
  * GET /logout
- * End user session and redirect to home
- * Inputs req.session
- * Outputs Destroys session, redirects to /
+ * Purpose: End user session and redirect to home
+ * Input: req.session
+ * Output: Destroys session, redirects to /
  */
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -112,19 +112,13 @@ app.use('/organiser', organiserRoutes);
 const attendeeRoutes = require('./routes/attendee');
 app.use('/attendee', attendeeRoutes);
 
-// Users routes - from original template
-// Not used in main application (registration via /login/register)
-// Kept for template compliance
-const usersRoutes = require('./routes/users');
-app.use('/users', usersRoutes);
-
 // =============================================================================
 // ERROR HANDLERS
 // =============================================================================
 
 /**
  * 404 Handler
- * Handle requests to undefined routes
+ * Purpose: Handle requests to undefined routes
  */
 app.use((req, res) => {
     res.status(404).send(`
@@ -136,7 +130,7 @@ app.use((req, res) => {
 
 /**
  * Error Handler
- * Handle server errors
+ * Purpose: Handle server errors
  */
 app.use((err, req, res, next) => {
     console.error('Server error:', err);
