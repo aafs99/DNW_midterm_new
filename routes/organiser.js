@@ -9,6 +9,7 @@
 
 const express = require('express');
 const router = express.Router();
+const { sanitizeInput, formatDate, isValidFutureDate, parsePositiveInt } = require('../utils/helpers');
 
 // =============================================================================
 // AUTHENTICATION MIDDLEWARE
@@ -25,26 +26,26 @@ router.use((req, res, next) => {
 });
 
 // =============================================================================
-// HELPER FUNCTIONS
+// SETTINGS MIDDLEWARE
+// Purpose: Load site settings for all organiser pages (for navbar/title)
+// Input: None
+// Output: res.locals.settings available in all templates
 // =============================================================================
-
-/**
- * formatDate
- * Purpose: Convert ISO date string to readable format
- * Input: dateString (ISO format)
- * Output: Formatted string e.g. "15 Jan 2025, 14:30"
- */
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+router.use((req, res, next) => {
+    global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
+        if (err || !settings) {
+            res.locals.settings = { site_name: 'Event Manager', site_description: '' };
+        } else {
+            res.locals.settings = settings;
+        }
+        next();
     });
-}
+});
+
+// =============================================================================
+// HELPER FUNCTIONS
+// Note: Common helpers imported from utils/helpers.js
+// =============================================================================
 
 /**
  * calculateRemainingTickets
@@ -84,29 +85,6 @@ function calculateRemainingTickets(events) {
     }));
 }
 
-/**
- * isValidFutureDate
- * Purpose: Check if date is today or in the future
- * Input: dateString
- * Output: boolean
- */
-function isValidFutureDate(dateString) {
-    const inputDate = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return inputDate >= today;
-}
-
-/**
- * sanitizeInput
- * Purpose: Basic XSS protection
- * Input: str (string)
- * Output: Sanitized string
- */
-function sanitizeInput(str) {
-    if (!str) return '';
-    return str.replace(/[<>]/g, '');
-}
 
 // =============================================================================
 // ORGANISER HOME PAGE
@@ -251,7 +229,8 @@ router.post('/edit/:id', (req, res) => {
     const eventId = req.params.id;
 
     if (!eventId || isNaN(eventId)) {
-        return res.status(400).send('Invalid event ID');
+        req.flash('error', 'Invalid event ID.');
+        return res.redirect('/organiser');
     }
 
     const title = sanitizeInput(req.body.title || '').trim();
@@ -265,19 +244,23 @@ router.post('/edit/:id', (req, res) => {
     const updatedAt = new Date().toISOString();
 
     if (!title) {
-        return res.status(400).send('Title is required. <a href="/organiser/edit/' + eventId + '">Go back</a>');
+        req.flash('error', 'Title is required.');
+        return res.redirect('/organiser/edit/' + eventId);
     }
 
     if (!eventDate) {
-        return res.status(400).send('Event date is required. <a href="/organiser/edit/' + eventId + '">Go back</a>');
+        req.flash('error', 'Event date is required.');
+        return res.redirect('/organiser/edit/' + eventId);
     }
 
     if (!isValidFutureDate(eventDate)) {
-        return res.status(400).send('Event date must be today or in the future. <a href="/organiser/edit/' + eventId + '">Go back</a>');
+        req.flash('error', 'Event date must be today or in the future.');
+        return res.redirect('/organiser/edit/' + eventId);
     }
 
     if (fullPrice < 0 || concessionPrice < 0 || fullQuantity < 0 || concessionQuantity < 0) {
-        return res.status(400).send('Prices and quantities cannot be negative. <a href="/organiser/edit/' + eventId + '">Go back</a>');
+        req.flash('error', 'Prices and quantities cannot be negative.');
+        return res.redirect('/organiser/edit/' + eventId);
     }
 
     global.db.run(
@@ -286,7 +269,8 @@ router.post('/edit/:id', (req, res) => {
         function(err) {
             if (err) {
                 console.error('Update error:', err);
-                return res.status(500).send('Failed to update event');
+                req.flash('error', 'Failed to update event.');
+                return res.redirect('/organiser/edit/' + eventId);
             }
 
             const saveTicket = (type, price, quantity, callback) => {
@@ -316,14 +300,17 @@ router.post('/edit/:id', (req, res) => {
             saveTicket('full', fullPrice, fullQuantity, (err2) => {
                 if (err2) {
                     console.error('Ticket save error:', err2);
-                    return res.status(500).send('Failed to save tickets');
+                    req.flash('error', 'Failed to save tickets.');
+                    return res.redirect('/organiser/edit/' + eventId);
                 }
 
                 saveTicket('concession', concessionPrice, concessionQuantity, (err3) => {
                     if (err3) {
                         console.error('Ticket save error:', err3);
-                        return res.status(500).send('Failed to save tickets');
+                        req.flash('error', 'Failed to save tickets.');
+                        return res.redirect('/organiser/edit/' + eventId);
                     }
+                    req.flash('success', 'Event updated successfully.');
                     res.redirect('/organiser');
                 });
             });
@@ -416,7 +403,8 @@ router.post('/settings', (req, res) => {
     const siteDescription = sanitizeInput(req.body.site_description || '').trim();
 
     if (!siteName || !siteDescription) {
-        return res.status(400).send('Both fields are required. <a href="/organiser/settings">Go back</a>');
+        req.flash('error', 'Both fields are required.');
+        return res.redirect('/organiser/settings');
     }
 
     global.db.run(
@@ -425,8 +413,10 @@ router.post('/settings', (req, res) => {
         (err) => {
             if (err) {
                 console.error('Settings update error:', err);
-                return res.status(500).send('Update failed');
+                req.flash('error', 'Failed to update settings.');
+                return res.redirect('/organiser/settings');
             }
+            req.flash('success', 'Settings updated successfully.');
             res.redirect('/organiser');
         }
     );

@@ -9,35 +9,31 @@
 
 const express = require('express');
 const router = express.Router();
+const { sanitizeInput, isValidEmail, formatDateShort, parsePositiveInt } = require('../utils/helpers');
 
 const MAX_TICKETS_PER_BOOKING = 10;
 
 // =============================================================================
 // HELPER FUNCTIONS
+// Note: Common helpers imported from utils/helpers.js
 // =============================================================================
 
-/**
- * isValidEmail
- * Purpose: Validate email format
- * Input: email (string)
- * Output: boolean
- */
-function isValidEmail(email) {
-    if (!email) return true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-}
-
-/**
- * sanitizeInput
- * Purpose: Basic XSS protection
- * Input: str (string)
- * Output: Sanitized string
- */
-function sanitizeInput(str) {
-    if (!str) return '';
-    return str.replace(/[<>]/g, '');
-}
+// =============================================================================
+// SETTINGS MIDDLEWARE
+// Purpose: Load site settings for all attendee pages (for navbar/title)
+// Input: None
+// Output: res.locals.settings available in all templates
+// =============================================================================
+router.use((req, res, next) => {
+    global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
+        if (err || !settings) {
+            res.locals.settings = { site_name: 'Event Manager', site_description: '' };
+        } else {
+            res.locals.settings = settings;
+        }
+        next();
+    });
+});
 
 // =============================================================================
 // ATTENDEE HOME PAGE
@@ -335,22 +331,24 @@ router.get('/confirmation/:id', (req, res) => {
             return res.redirect('/attendee');
         }
 
+        // Get only the most recent bookings (within last 5 minutes) to avoid showing old bookings
         global.db.all(
             `SELECT ticket_type, quantity, booking_date
              FROM bookings
              WHERE event_id = ? AND attendee_name = ?
-             ORDER BY booking_date DESC
-             LIMIT 10`,
+             AND booking_date >= datetime('now', '-5 minutes')
+             ORDER BY booking_date DESC`,
             [eventId, attendeeName],
             (err2, bookings) => {
                 if (err2 || !bookings || bookings.length === 0) {
-                    req.flash('error', 'No bookings found.');
+                    req.flash('error', 'No recent bookings found.');
                     return res.redirect('/attendee');
                 }
 
                 global.db.all('SELECT type, price FROM tickets WHERE event_id = ?', [eventId], (err3, tickets) => {
                     if (err3) {
-                        return res.status(500).send('Price lookup failed');
+                        req.flash('error', 'Failed to load ticket prices.');
+                        return res.redirect('/attendee');
                     }
 
                     const priceMap = {};

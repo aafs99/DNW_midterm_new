@@ -79,10 +79,17 @@ global.db = new sqlite3.Database('./database.db', function(err) {
  * GET /
  * Purpose: Display main home page with navigation links
  * Input: None
- * Output: Renders home.ejs with links to organiser and attendee pages
+ * Output: Renders home.ejs with site settings and links to organiser and attendee pages
+ * Database: SELECT from settings table
  */
 app.get('/', (req, res) => {
-    res.render('home');
+    global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
+        if (err || !settings) {
+            // Fallback to default if settings not found
+            settings = { site_name: 'Event Manager', site_description: 'Manage your events' };
+        }
+        res.render('home', { settings });
+    });
 });
 
 /**
@@ -145,5 +152,5 @@ app.use((err, req, res, next) => {
 // START SERVER
 // =============================================================================
 app.listen(port, () => {
-    console.log(`Flavour Academy running at http://localhost:${port}`);
+    console.log(`Event Manager running at http://localhost:${port}`);
 });

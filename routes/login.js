@@ -9,11 +9,13 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const { isValidEmail } = require('../utils/helpers');
 
 const SALT_ROUNDS = 10;
 
 // =============================================================================
 // HELPER FUNCTIONS
+// Note: Common helpers imported from utils/helpers.js
 // =============================================================================
 
 /**
@@ -28,28 +30,12 @@ async function hashPassword(password) {
 
 /**
  * verifyPassword
- * Purpose: Compare password against stored hash
- * Handles legacy plain text passwords for migration
+ * Purpose: Compare password against stored bcrypt hash
  * Input: password (string), storedHash (string)
  * Output: Promise<boolean>
  */
 async function verifyPassword(password, storedHash) {
-    if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$')) {
-        return await bcrypt.compare(password, storedHash);
-    }
-    return password === storedHash;
-}
-
-/**
- * isValidEmail
- * Purpose: Validate email format
- * Input: email (string)
- * Output: boolean
- */
-function isValidEmail(email) {
-    if (!email) return true;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return await bcrypt.compare(password, storedHash);
 }
 
 // =============================================================================
@@ -60,11 +46,17 @@ function isValidEmail(email) {
  * GET /login
  * Purpose: Display login and registration forms
  * Input: req.query.message (optional)
- * Output: Renders login.ejs
+ * Output: Renders login.ejs with settings
+ * Database: SELECT from settings table
  */
 router.get('/', (req, res) => {
     const message = req.query.message || null;
-    res.render('login', { message });
+    global.db.get('SELECT * FROM settings WHERE id = 1', [], (err, settings) => {
+        if (err || !settings) {
+            settings = { site_name: 'Event Manager', site_description: '' };
+        }
+        res.render('login', { message, settings });
+    });
 });
 
 /**
